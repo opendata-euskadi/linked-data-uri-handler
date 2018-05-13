@@ -3,6 +3,7 @@
 	<name>r01hpLODWar</name>
 	<comment></comment>
 	<projects>
+		<project>r01PLATEALocalConfig</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
