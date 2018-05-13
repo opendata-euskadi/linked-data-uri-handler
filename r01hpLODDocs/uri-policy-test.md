@@ -110,6 +110,7 @@ The URI is handled differently whether the requested MIME is HTML or RDF (or tur
 ## Testing:
 Content negotiation:
 * [CASE 1]
+
 				  URL: http://data.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi
 		Accept header: html
 	  Expected result: since the [resource] has an associated [web page] (www.euskadi.eus), a CLIENT-REDIR
@@ -119,7 +120,8 @@ Content negotiation:
   							 -H 'accept: application/xhtml+xml' \
 
 			   Result: 	euskadi.eus web page
-* [CASE 2]:
+* [CASE 2]
+
 				  URL: http://data.euskadi.eus/eli/es-pv/l/1979/03/20/(0)/dof
 		Accept header: html
 	  Expected result: since the [resource] DOES NOT hava an associated [web page] the only option is to render
@@ -131,6 +133,7 @@ Content negotiation:
 			   Result: An [ELDA]-generated web page for the [resource]
 
 * [CASE 3]
+
 				  URL: http://data.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi
 		Accept header: rdf
 	  Expected result: a CLIENT-REDIR to the [triple-store] date is issued: http://localhost/data/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi
@@ -140,6 +143,7 @@ Content negotiation:
   							 -H 'accept: application/rdf+xml'
 			   Result: 	The [resource] in RDF format
 * [CASE 4]
+
 				URL: http://data.euskadi.eus/eli/es-pv/l/1979/03/20/(0)/dof
 		Accept header: rdf
 	  Expected result: a CLIENT-REDIR to the [triple-store] date is issued: http://localhost/eli/es-pv/l/1979/03/20/(0)/dof
