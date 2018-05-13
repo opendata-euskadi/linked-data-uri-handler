@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<componentDef>
+	<numberOfPropertiesEstimation>10</numberOfPropertiesEstimation>
+	<resourcesLoader type='CLASSPATH'/>
+	<propertiesFileURI>r01hp/r01hp.lod.properties.xml</propertiesFileURI>	<!-- BEWARE with ClassPathLoader: USE relative paths -->
+</componentDef>

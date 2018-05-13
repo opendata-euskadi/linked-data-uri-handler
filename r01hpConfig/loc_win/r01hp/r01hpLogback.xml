@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+================================================================================
+	 r01hp LOGBACK CONFIGURATION
+================================================================================
+-->
+<included>
+	<logger name="r01hp" level="debug" additivity="false">
+		<appender-ref ref="datos_app_log" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+	<logger name="r01hp.proxy" level="debug" additivity="false">
+		<appender-ref ref="datos_app_log" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+	<logger name="r01hp.util.parser" level="warn" additivity="false">
+		<appender-ref ref="datos_app_log" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+</included>
+

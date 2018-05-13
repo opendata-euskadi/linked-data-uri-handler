@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lod>
+	<!--
+		Data host domain:
+			data.euskadi.eus
+	-->
+	<dataSite>http://data.euskadi.eus</dataSite>
+	
+	<!-- Where the LODWar is deployed -->
+	<lodWar>
+		<host>localhost:8080</host>
+	</lodWar>
+	
+	<uriHandler>
+		<!-- 
+		when an URI like /id/{resource} is requested with mime=HTML, a query to the [triple-store] is issued
+		to check if that {resource} has an associated web page: a is-main-entity-of-page query is issued to the [triple-store]
+		... for testing purposes, a mock is-main-entity-of-page resolver can be used 
+		-->
+		<useMockIsMainEntityOfPageResolver>false</useMockIsMainEntityOfPageResolver>
+	</uriHandler>
+	
+	<!--
+	ELDA Config
+		Elda config is a .ttl file that's set at a web.xml init-param:
+			com.epimorphics.api.initialSpecFile = ${r01hpConfigPath}/elda/r01hp.elda.euskadi_es.config.ttl
+		this property contains the ${r01hpConfigPath} that is environment dependent
+		(the var is replaced at R01HFakeServletContext type)
+	-->
+	<elda>
+		<configRootPath>d:/eclipse/projects_platea/r01hp/common/r01hpConfig/loc_win/r01hp/</configRootPath>
+	</elda>
+	
+	<triplestore>
+		<useGenericHttpProxy>true</useGenericHttpProxy>
+		<proxyConnectTimeout>1s</proxyConnectTimeout>		<!-- the default value is 2s -->
+		<proxyDebugEnabled>true</proxyDebugEnabled>		<!-- debug wl proxy: it'll write a log file at: WIN (d:/temp_dev/r01hp) LINUX(/tmp/r01hp) -->
+		<endPoint>
+			<hosts>
+				<!-- READ blazegraph -->
+				<host role="read">http://localhost:9999</host>
+				
+				<!-- write blazegraph -->
+				<host role="write">http://localhost:9999</host> 
+			</hosts>	
+			<sparqlUrlPathPattern>/read/blazegraph/namespace/euskadi_db/sparql</sparqlUrlPathPattern>
+		</endPoint>		
+	</triplestore>	
+</lod>

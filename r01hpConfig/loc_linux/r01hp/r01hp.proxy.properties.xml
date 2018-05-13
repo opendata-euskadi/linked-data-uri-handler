@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<proxy>
+	<!-- Proxy definition loading ==================================================== -->
+	<!-- 	Proxies are defined in a fileSystem / classpath location (folder) in files -->
+	<!-- 	with a name pattern like *.proxy.conf                                      -->
+	<!--    When bootstraping system, all proxy conf files are parsed an proxies are   -->
+	<!--    configured                                                                 -->
+	<proxiesDefinition>
+		<loader>FROM_FILESYSTEM</loader>	<!-- FROM_FILESYSTEM / FROM_CLASSPATH (see r01hp.proxy.R01HProxyDefLoader) -->
+		<folderPath>/config/r01hp/proxydefs</folderPath>
+	</proxiesDefinition>
+	
+	<!-- enables / disables proxy definitions debugging using ?r01hpHelp=true url query string -->
+	<debugDefinitions>
+		<enabled>true</enabled>
+	</debugDefinitions>
+</proxy>
+

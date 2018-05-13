@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<properties>
+
+	<!-- Conexion a bd para la pagina de idiodisp que muestra
+	     los documentos de un contenido -->
+	<database>
+		<connection name='r01hIDIODISP'>
+			<class>Datasource</class>
+			<uri>r01d.r01dDataSource</uri>
+		</connection>
+		<connection name='r01hOpenDataPackage'>
+			<class>Datasource</class>
+			<uri>r01d.r01dDataSource</uri>
+		</connection>
+	</database>
+
+	<defaultPage>
+		<!-- Pagina donde mostrar el detalle del contenido cuando da un 404 -->
+		<numPage>r33-1860/</numPage>
+		<!-- Pagina a la que se redirige cuando, despues de un 404, no hay una URL nueva -->
+		<error404Page>http://www.contenidos.servicios.jakinaplus.localhost.net</error404Page>
+		<!-- AV de Logotipos para la pagina del IDIODISP -->
+		<logotype>/AVComun/cabeceraEuskadiIdioDisp.html</logotype>
+		<!-- AV de pie de pagina para la pagina del IDIODISP -->
+		<foot>/AVComun/pieEuskadiIdioDisp.html</foot>
+	</defaultPage>
+
+	<hostRedirector>http://www.contenidos.servicios.jakinaplus.localhost.net/</hostRedirector>
+
+	<!-- Textos -->
+	<propertiesFilesPath>
+		<es>/html/datos/mensajes/portalmessages_es.properties</es>
+		<eu>/html/datos/mensajes/portalmessages_eu.properties</eu>
+		<en>/html/datos/mensajes/portalmessages_en.properties</en>
+		<fr>/html/datos/mensajes/portalmessages_fr.properties</fr>
+		<de>/html/datos/mensajes/portalmessages_de.properties</de>
+	</propertiesFilesPath>
+
+</properties>

@@ -1,0 +1,71 @@
+{
+	"variables": [],
+	"info": {
+		"name": "R01HPLOD (Local)",
+		"_postman_id": "c8aaca5a-d48d-52ae-bfa2-4782b9742dd6",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SPARQL Query",
+			"request": {
+				"url": "",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "SPARQL Query (POST)",
+			"request": {
+				"url": "http://localhost:8080/r01hpLODWar/sparql/",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/rdf+xml",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "query",
+							"value": "DESCRIBE <http://es.euskadi.ejiedes.eus/id/test-entity-id>",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "DATA",
+			"request": {
+				"url": "http://localhost/data/test-entity-id",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/rdf+xml",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

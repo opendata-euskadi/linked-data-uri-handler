@@ -1,0 +1,93 @@
+require.config({
+  baseUrl: '$assets/js/vendor',
+  paths: {
+    'app':                  '..',
+    // lib paths
+    'bootstrap':            'bootstrap',
+    'jquery':               'jquery',
+    'sprintf':              'sprintf.min',
+    'datatables':    'jquery.dataTables'
+  },
+  shim: {
+    'lodash': {
+      exports: '_'
+    },
+    'bootstrap': {
+      deps: ['jquery']
+    },
+    'bootstrap-select.min': {
+      deps: ['bootstrap']
+    },
+    'jQuery.XDomainRequest': {
+      deps: ['jquery']
+    },
+    'datatables': {
+      deps: ['jquery'],
+      exports: 'DataTable'
+    },
+    'qonsole': {
+      deps: ['jquery.dataTables',
+             'app/remote-sparql-service',
+             'lib/codemirror',
+             'cm/addon/fold/foldcode',
+             'cm/addon/fold/foldgutter',
+             'cm/addon/fold/brace-fold',
+             'cm/addon/fold/xml-fold',
+             'cm/addon/fold/comment-fold',
+             'cm/mode/javascript/javascript',
+             'cm/mode/xml/xml',
+             'cm/mode/sparql/sparql',
+             'cm/mode/turtle/turtle',
+             'cm/display/autoprefix'
+             ],
+      exports: 'qonsole'
+    },
+    'sprintf': {
+      exports: 'sprintf'
+    }
+    #if( $mapDisplay && !$noOSMLibs )
+      ,
+      'OpenLayers': {
+        deps: ['jquery', 'proj4js-combined'],
+        exports: 'OpenLayers'
+      },
+      'OpenStreetMap': {
+        deps: ['OpenLayers']
+      },
+      'proj4js-combined': {
+        deps: ['jquery']
+      },
+      'maps': {
+        deps: ['OpenStreetMap']
+      }
+    #end
+  },
+  packages: [{
+    name: 'codemirror',
+    location: 'cm',
+    main: 'lib/codemirror'
+  }]
+});
+
+
+
+require( ['require'],
+  function( require ) {
+    require(
+      ['lodash',
+       'jquery',
+       'sprintf',
+       'bootstrap',
+       'app/qonsole',
+       'datatables',
+       'app/popover',
+       'app/events'
+       #if( $mapDisplay && !$noOSMLibs )
+         , 'app/maps'
+       #end
+      ],
+      function( _, $ ) {
+        #parse( "partials/qonsole-head.vm" )
+      });
+  }
+);

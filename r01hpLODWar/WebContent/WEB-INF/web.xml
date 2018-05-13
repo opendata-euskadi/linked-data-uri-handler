@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xmlns="http://java.sun.com/xml/ns/javaee" 
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
+         id="WebApp_ID" version="2.5">
+         
+	<display-name>r01hpLODWar</display-name>
+
+	<!-- ==================================================================== -->
+	<!-- 
+	ELDA CONFIG LOCATION
+	    Elda uses a ttl (turtle) file as a config file
+	    config file can be set in TWO diferent ways:
+	   	[1] - From the WEB.XML file (see com.epimorphics.lda.routing.ServletUtils#specNamesFromInitParam())
+	   		  		The web.xml file might contain two CONTEXT PARAM like:
+	   					<context-param>
+							<param-name>com.epimorphics.api.initialSpecFile</param-name>
+							<param-value>${r01hpConfigPath}/elda/r01hp.elda.euskadi_es.config.ttl</param-value>
+	   					</context-param>
+	   					
+	   		  		PROBLEM with this alternative:
+	   					The web.xml init parameter named=com.epimorphics.api.initialSpecFile that sets where the ELDA config file 
+	   					be an absolute path of a .ttl file
+	   			    	... BUT this path depends on the environment
+	   						- Tomcat allows init-param in web.xml file to use environment vars (set with -Dvar=value when starting the JVM)
+								<context-param>
+									<param-name>com.epimorphics.api.initialSpecFile</param-name>
+									<param-value>${r01hpConfigPath}/elda/r01hp.elda.euskadi_es.config.ttl</param-value>
+	   							</context-param>
+	   						- Weblogic DOES NOT interpolates environment vars in web.xml init-params 
+	   					... so JVM env params cannot be used consistently between Tomcat & Weblogic
+	   
+	   	[2] - From a JVM's environment variable (see com.epimorphics.lda.routing.ServletUtils#specNamesFromSystemProperties())
+	   				Just set a JVM environment variable:
+	   					-Delda.spec={absolute path of the .ttl file}
+	   
+	    If neither [1] nor [2] is used, the bootstrap process will set -Delda.spec={absolute path of the .ttl file} 
+	    using the r01hp.lod.properties.xml file
+	-->
+	<!-- 
+	<context-param>
+		<param-name>com.epimorphics.api.initialSpecFile</param-name>
+		<param-value>r01hp.elda.euskadi.config.ttl</param-value>
+	</context-param>
+	<context-param>
+		<param-name>com.epimorphics.api.prefixPath</param-name>
+		<param-value>local:d:/eclipse/projects_platea/r01hp/r01hpConfig/loc_win/</param-value>
+	</context-param>
+	-->
+	<!-- ==================================================================== -->
+	
+	
+	<!-- ==================================================================== -->
+	<!-- LOD SERVER                                                           -->
+	<filter>
+		<filter-name>guiceFilter</filter-name>
+		<filter-class>com.google.inject.servlet.GuiceFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>guiceFilter</filter-name>
+		<url-pattern>*</url-pattern>
+	</filter-mapping>
+	
+	<!--
+	  A bit hack was needed to use GUICE with LDA since TWO servlet context listeners were needed:
+	  		- The servlet context listener that LDA uses: com.epimorphics.lda.restlets.RouterRestlet.Init
+	   		- The servlet context listener that bootstraps the guice injector: com.google.inject.servlet.GuiceServletContextListener
+	  ... since there cannot be two servlet context listeners and multiple inheritance is NOT possible:
+	  		- the code of com.google.inject.servlet.GuiceServletContextListener was REPLICATED at com.google.inject.servlet.R01HLODWarServletContextListener
+	  		  (this requires that the java package was com.google.inject.servlet because some types are only module-visible)
+	  
+	  		- com.google.inject.servlet.R01HLODWarServletContextListener type extends com.epimorphics.lda.restlets.RouterRestlet.Init 
+	  		  and contextInitialized() / contextDestroyed() of this super type is called after guice initialization
+	-->
+	<listener>
+		<listener-class>com.google.inject.servlet.R01HLODWarServletContextListener</listener-class>
+	</listener>
+	<!-- ==================================================================== -->
+
+	<servlet>
+		<servlet-name>sparqlgui</servlet-name>
+		<jsp-file>/_pages/yasgui.jsp</jsp-file>
+	</servlet>
+	<!--mapping-->
+	<servlet-mapping>
+		<servlet-name>sparqlgui</servlet-name>
+		<url-pattern>/sparqlgui</url-pattern>   
+	</servlet-mapping>
+
+</web-app>

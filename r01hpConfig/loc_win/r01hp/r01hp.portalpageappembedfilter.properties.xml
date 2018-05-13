@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<portalpageappembedfilter environment ="local">
+	<!-- Resources NOT embedded into a portal page ============================================ -->
+	<!-- A list of regular expressions that will be matched agains the URL path of the resource -->
+	<notEmbeddedResources>
+		<!-- 
+		<urlPathRegExp>/not-embeded/.*</urlPathRegExp>
+		 -->
+	</notEmbeddedResources>
+	
+	<!-- Portal server configuration ==================================================== 		-->
+	<!-- 	Defines the location (filesystem path) of the container pages where					-->
+	<!-- 	the app will be embedded, the default page to use and how these pages are cached	-->
+	<!--    Multiple environments  can be configured in the same file						    -->
+	<portalServer>
+		<cacheConfig>
+			<initialCapacity>10</initialCapacity>
+			<maxSize>100</maxSize>
+			<checkInterval>20s</checkInterval>
+		</cacheConfig> 
+		<portalFiles>
+			<!-- the filesystem path where the container pages can be found -->
+			<root>d:/temp_dev/r01hp/</root>
+			<pages>/html/pages/portal</pages>
+			
+			<!-- the default portal/page/lang to be used if none can be guess from the request -->
+			<defaultPortal>web01</defaultPortal>
+			<defaultPage>eduki</defaultPage>
+			<defaultLang>es</defaultLang>
+		</portalFiles>
+		<portalCookieName>r01hpPortalCookie</portalCookieName>
+	</portalServer>
+	
+	<!-- Metrics see http://metrics.dropwizard.io/3.1.0/ ============================= -->
+	<metrics enabled='true'>
+		<consoleReporter enabled='false' reportEvery="30s" />
+
+		<slf4jReporter enabled='true' reportEvery="30s"/>
+
+		<!-- visualVM can be used to inspect metrics: 															  -->
+		<!-- 	1.- Install visualVM MBeans plugin: tools > plugins > Available plugins > [VisualVM MBeans] 	  -->
+		<!-- 	2.- Select [Tomcat] (or whatever) and go to the [MBeans] tab                                      -->
+		<!-- 	3.- Using the tree go to [Metrics]                                                                -->
+		<!--    4.- double-clicking at any metric value a graph can be seen                                       -->
+		<jmxReporter enabled='false'/>
+
+		<!-- if metrics restservices are enabled some info is available through an admin servlet (restServices)     -->
+		<!-- 		METRICS: 		http://localhost:8080/r01hpProxyWar/r01hpMetricsRestServicesServlet/metrics     -->
+		<!-- 		HEALTH-CHECK:	http://localhost:8080/r01hpProxyWar/r01hpMetricsRestServicesServlet/healthcheck -->
+		<!-- 		THREADS:		http://localhost:8080/r01hpProxyWar/r01hpMetricsRestServicesServlet/threads     -->
+		<!-- 		PING: 			http://localhost:8080/r01hpProxyWar/r01hpMetricsRestServicesServlet/ping        -->
+		<restServices>true</restServices>
+	</metrics>
+</portalpageappembedfilter>
+

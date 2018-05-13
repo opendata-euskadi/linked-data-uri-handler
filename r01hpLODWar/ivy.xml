@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.    
+-->
+<ivy-module version="2.3" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd"
+			xmlns:e="http://ant.apache.org/ivy/extra" 
+			xmlns:m="http://ant.apache.org/ivy/maven">
+
+    <info organisation="com.ejie.r01.r01hp"
+          module="r01hpLODWar"
+          status="integration"
+          revision="1.1.0">
+	</info>
+	
+	<!-- 
+	IMPORTANT! 
+		see /r01fbClasses/ivy.read.me about how Ivy works 
+	-->
+	<configurations>
+		<conf name="default" description="shortcut to runtime and master dependencies"/>
+		<conf name="compile" description="Used ONLY at compile time" />
+		<conf name="runtime" description="Not required at compile time BUT required for execution and so deployed to a server"/>
+	</configurations>
+
+	<!-- 
+	<publications>
+		<artifact name="r01hpLODWar" type="jar" ext="jar" />
+		<artifact name="r01hpLODWar" type="pom" ext="pom" />
+	</publications>
+	-->
+	
+	<dependencies defaultconf="default->default">	
+		<!-- ============================================================================================================================== -->
+		<!-- R01FB                                                                                                                          -->
+		<!-- ============================================================================================================================== -->
+		<dependency org="com.ejie.r01.r01fb" name="r01fbPropertiesClasses" rev="latest.integration" 
+					conf="default->default;compile->compile;runtime->runtime">
+		</dependency>
+		
+		<dependency org="com.ejie.r01.r01fb" name="r01fbWebProfileClasses" rev="latest.integration" 
+					conf="default->default;compile->compile;runtime->runtime">
+			<!-- BEWARE!! jersey-guice MUST be located at each WAR's WEB-INF/lib folder -->
+			<exclude org="com.sun.jersey.contribs" module="jersey-guice"/>
+			<exclude org="org.springframework"/>
+					
+			<!-- BEWARE!! the guice-servlet lib is located at each WAR's WEB-INF/lib folder -->
+			<exclude org="com.google.inject.extensions" name="guice-servlet"/>
+		</dependency> 
+		
+		<!-- used at to filter unauthorized access to triple-store console -->
+		<!--
+		<dependency org="com.ejie.r01.r01fb" name="r01fbEJIEClasses" rev="latest.integration" 
+					conf="default->default;compile->compile;runtime->runtime">
+		-->
+			<!-- 
+				BEWARE!!! 	Xerces / Xalan / xml-apis dependencies are a nightmare in weblogic
+							EXCLUDE these deps when deploying in weblogic server
+							(see: https://stackoverflow.com/questions/11677572/dealing-with-xerces-hell-in-java-maven)
+			-->
+			<!--
+			<exclude org="xml-apis" name="xml-apis" />
+			<exclude org="xalan" name="xalan" />
+			<exclude org="xerces" name="xercesImpl" />
+			<exclude org="javax.xml.rpc" name="javax.xml.rpc-api" />
+			-->
+		<!--
+		</dependency>
+		-->
+		
+		<!-- ============================================================================================================================== -->
+		<!-- LOD                                                                                                                            -->
+		<!-- ============================================================================================================================== -->		
+		<dependency org="com.ejie.r01.r01hp" name="r01hpLODClasses" rev="latest.integration" 
+					conf="default->default;compile->compile;runtime->runtime">
+		</dependency>
+		
+		<!-- ============================================================================================================================== -->
+		<!-- R01HPPortalPageAppEmbedFilter                                                                                                  -->
+		<!-- ============================================================================================================================== -->
+		<dependency org="com.ejie.r01.r01hp" name="r01hpPortalPageAppEmbedClasses" rev="latest.integration" 
+					conf="default->default;compile->compile;runtime->runtime">
+		</dependency>
+		
+		<!-- ============================================================================================================================== -->
+		<!-- R01FB: Marshaller (just to import Jackson libraries required by elda)                                                          -->
+		<!-- ============================================================================================================================== -->
+		<dependency org="com.ejie.r01.r01fb" name="r01fbObjectStreamerClasses" rev="latest.integration" 
+					conf="default->default;compile->compile;runtime->runtime">
+		</dependency>
+					
+		<!-- ============================================================================================================================== -->
+		<!-- ELDA REQUIRED                                                                                                                  -->
+		<!-- ============================================================================================================================== -->
+		<dependency org="com.sun.jersey" name="jersey-json" rev="1.19.4" />		
+	</dependencies>
+	
+</ivy-module>

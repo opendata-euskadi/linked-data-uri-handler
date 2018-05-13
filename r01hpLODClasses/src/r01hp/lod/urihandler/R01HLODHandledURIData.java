@@ -1,0 +1,13 @@
+package r01hp.lod.urihandler;
+
+import r01f.debug.Debuggable;
+
+public interface R01HLODHandledURIData 
+		 extends Debuggable {
+/////////////////////////////////////////////////////////////////////////////////////////
+//	
+/////////////////////////////////////////////////////////////////////////////////////////	
+	public R01HLODURIHandleAction getAction();
+	
+	public <H extends R01HLODHandledURIData> H as(final Class<H> type);
+}
