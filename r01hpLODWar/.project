@@ -3,7 +3,6 @@
 	<name>r01hpLODWar</name>
 	<comment></comment>
 	<projects>
-		<project>r01PLATEALocalWinConfig</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
