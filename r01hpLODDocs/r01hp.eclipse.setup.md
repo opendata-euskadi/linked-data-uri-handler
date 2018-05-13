@@ -54,9 +54,9 @@ Follow the guide at https://github.com/opendata-euskadi/java-utils/blob/master/b
 
 3. Click on [Advanced >] options and select `link to alternate location (Linked Folder)`
 
-4. Browse and select `{dev_home}/projects_r01fb/base/r01fbConfig/loc_win` (or loc_linux)
+4. Browse and select `{dev_home}/projects_r01fb/base/r01fbConfig/loc_win/r01fb` (or loc_linux)
 
-Repeat [3] and [4] for `{dev_home}/projects_linked_data/r01hpConfig/loc_win`
+Repeat [3] and [4] for `{dev_home}/projects_linked_data/r01hpConfig/loc_win/r01hp`
 
 
 ## [6]: Create a new [Tomcat] server
@@ -65,3 +65,14 @@ Repeat [3] and [4] for `{dev_home}/projects_linked_data/r01hpConfig/loc_win`
 2. Add a new [Tomcat 9] server
 
 3. Add the [r01hpLODWar] project
+
+4. Start [Tomcat]
+
+## [7]: Start the [triple-store] server
+see r01hp.lod.blazegraph.md
+
+## [8]: Insert some data:
+see test.setup.md
+
+## [9]: TEST
+see: uri-policy-test.md and sparql-test.md
