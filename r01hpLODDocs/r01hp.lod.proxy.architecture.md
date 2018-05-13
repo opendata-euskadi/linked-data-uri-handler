@@ -1,4 +1,5 @@
 
+```
                                     |
                               http://site/*
                                     |
@@ -6,14 +7,17 @@
                     	|                       |
                     	|          WEB          |
                     	+-----------+-----------+
-                    	          proxy 
+                    	          proxy
                     	            |
-                    	 http://wlhost:wlport/r01hpLODWar/*
+                     http://appserver:port/r01hpLODWar/*
                     	            |
                 +-------------------v--------------------+
                 |APP SERVER                              |
                 |       +-----------------------------+  |
                 |       |    LOD WAR                  |  |
+                |       |[AppEmbedFilter]             |  |
+                |       |       |                     |  |
+                |       |[URIHandlerFilter]           |  |
                 |       |       |                     |  |
                 |       |       +-----req,forward     |  |
                 |       |       |           |         |  |
@@ -35,7 +39,6 @@
 	                    +-------------------------+
 	                    |                         |
 	                    |        TripleStore      |
-	                    |                         | 
+	                    |                         |
 	                    +-------------------------+
-                
-                
+```                
