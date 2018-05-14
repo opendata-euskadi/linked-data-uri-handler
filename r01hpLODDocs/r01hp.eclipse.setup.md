@@ -33,15 +33,15 @@ Follow the guide at https://github.com/opendata-euskadi/java-utils/blob/master/b
 
 4. Resolve Ivys and ensure all [R01FB] projects compile
 
-## [4]: Clone [linked-data-url-handler] (R01HP) projects_r01fb
+## [4]: Clone [linked-data-uri-handler] (R01HP) projects_r01fb
 1. Create a folder for the [R01FB] base projects at `{dev_home}/projects_linked_data/`
 
 2. Using [eclipse]'s GIT client import [R01HP] projects
 
     [file] > [import] > [Git] > [projects from git] > [clone uri]
-    - URI: https://github.com/opendata-euskadi/linked-data-url-handler
+    - URI: https://github.com/opendata-euskadi/linked-data-uri-handler
     - Host: github.com
-    - Repository path: /opendata-euskadi/linked-data-url-handler/
+    - Repository path: /opendata-euskadi/linked-data-uri-handler/
 
     Destination: `{dev_home}/projects_linked_data/`
 
@@ -70,9 +70,6 @@ Repeat [3] and [4] for `{dev_home}/projects_linked_data/r01hpConfig/loc_win/r01h
 
 ## [7]: Start the [triple-store] server
 see r01hp.lod.blazegraph.md
-
-## [8]: Configure apache
-setup an apache web server and configure it as described at r01hp.lod.apache.md
 
 ## [8]: Insert some data:
 see test.setup.md
