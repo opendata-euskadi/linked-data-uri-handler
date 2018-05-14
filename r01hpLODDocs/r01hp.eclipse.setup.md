@@ -71,6 +71,9 @@ Repeat [3] and [4] for `{dev_home}/projects_linked_data/r01hpConfig/loc_win/r01h
 ## [7]: Start the [triple-store] server
 see r01hp.lod.blazegraph.md
 
+## [8]: Configure apache
+setup an apache web server and configure it as described at r01hp.lod.apache.md
+
 ## [8]: Insert some data:
 see test.setup.md
 
