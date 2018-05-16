@@ -20,7 +20,7 @@ import r01f.types.Path;
 import r01hp.portal.appembed.R01HPortalEmbeddedAppUrlLog;
 import r01hp.portal.appembed.R01HPortalPageAppEmbedContext;
 import r01hp.portal.appembed.R01HPortalPageAppEmbedServletFilter;
-import r01hp.portal.appembed.R01HPortalPageAppEmbedServletFilterConfig;
+import r01hp.portal.appembed.config.R01HPortalPageAppEmbedServletFilterConfig;
 import r01hp.portal.appembed.metrics.R01HPortalPageAppEmbedMetrics;
 import r01hp.portal.appembed.metrics.R01HPortalPageAppEmbedMetricsHelp;
 

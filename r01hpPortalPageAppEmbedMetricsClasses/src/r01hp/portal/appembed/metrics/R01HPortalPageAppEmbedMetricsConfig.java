@@ -1,9 +1,12 @@
 package r01hp.portal.appembed.metrics;
 
+import javax.servlet.FilterConfig;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 import r01f.debug.Debuggable;
 import r01f.types.TimeLapse;
 import r01f.types.url.Url;
@@ -13,7 +16,9 @@ import r01f.xmlproperties.XMLPropertiesForAppComponent;
 /**
  * Models the codahales (dropwizadr) metrics config
  */
+@Slf4j
 @Accessors(prefix="_")
+@RequiredArgsConstructor
 public class R01HPortalPageAppEmbedMetricsConfig 
   implements Debuggable {
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -52,6 +57,20 @@ public class R01HPortalPageAppEmbedMetricsConfig
 		_consoleReporterConfig = new ConsoleReporterConfig(false,null);
 		_slf4jReporterConfig = new Slf4jReporterConfig(false,null,null);
 		_jmxRporterConfig = new JMXReporterConfig(false);
+	}
+	public R01HPortalPageAppEmbedMetricsConfig(final FilterConfig filterConfig) {
+		String metricsEnabledStr = filterConfig.getInitParameter("r01hp.appembed.metricsEnabled");
+		if (Strings.isNOTNullOrEmpty(metricsEnabledStr)) {
+			log.warn("Metrics overriden al web.xml (servlet filter init params): {}",
+					 metricsEnabledStr);
+			_enabled = Boolean.parseBoolean(metricsEnabledStr);			
+		} else {
+			_enabled = false;
+		}
+		_restServicesConfig =  new RESTServicesConfig(false);
+		_consoleReporterConfig = new ConsoleReporterConfig(false,null);
+		_slf4jReporterConfig = new Slf4jReporterConfig(false,null,null);
+		_jmxRporterConfig = new JMXReporterConfig(false);		
 	}
 	public R01HPortalPageAppEmbedMetricsConfig(final XMLPropertiesForAppComponent props) {
 		// global enabled / disabled
@@ -97,6 +116,16 @@ public class R01HPortalPageAppEmbedMetricsConfig
 			_jmxRporterConfig = new JMXReporterConfig(false);
 		}
 	}
+/////////////////////////////////////////////////////////////////////////////////////////
+//	CLONE
+/////////////////////////////////////////////////////////////////////////////////////////
+	public R01HPortalPageAppEmbedMetricsConfig cloneOverriddenWith(final R01HPortalPageAppEmbedMetricsConfig other) {
+		boolean enabled = other.isEnabled() ? other.isEnabled() : this.isEnabled();
+		return new R01HPortalPageAppEmbedMetricsConfig(enabled);
+	}
+/////////////////////////////////////////////////////////////////////////////////////////
+//	DEBUG
+/////////////////////////////////////////////////////////////////////////////////////////	
 	@Override
 	public CharSequence debugInfo() {
 		StringBuilder dbg = new StringBuilder();
@@ -130,7 +159,8 @@ public class R01HPortalPageAppEmbedMetricsConfig
 		} else {
 			dbg.append("Metrics are NOT available (disabled at r01hp.portalpageappembedfilter.properties.xml config file)");
 		}
-		return dbg;
+		return dbg.charAt(0) == '\n' ? dbg.substring(1)
+									 : dbg;
 	}
 /////////////////////////////////////////////////////////////////////////////////////////
 //

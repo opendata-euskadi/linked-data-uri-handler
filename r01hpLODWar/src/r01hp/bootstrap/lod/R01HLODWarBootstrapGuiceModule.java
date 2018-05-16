@@ -9,7 +9,6 @@ import com.google.inject.servlet.ServletModule;
 import lombok.extern.slf4j.Slf4j;
 import r01f.guids.CommonOIDs.AppCode;
 import r01f.guids.CommonOIDs.AppComponent;
-import r01f.util.types.collections.Lists;
 import r01f.xmlproperties.XMLPropertiesBuilder;
 import r01f.xmlproperties.XMLPropertiesForApp;
 import r01f.xmlproperties.XMLPropertiesForAppComponent;
@@ -17,8 +16,12 @@ import r01hp.bootstrap.portal.appembed.R01HPortalPageEmbedServletFilterGuiceModu
 import r01hp.lod.config.R01HLODURIHandlerConfig;
 import r01hp.lod.urihandler.filter.R01HLODURIHandlerServletFilter;
 import r01hp.portal.appembed.R01HPortalPageAppEmbedServletFilter;
-import r01hp.portal.appembed.R01HPortalPageAppEmbedServletFilterConfig;
+import r01hp.portal.appembed.config.R01HPortalPageAppEmbedServletFilterConfig;
+import r01hp.portal.appembed.config.R01HPortalPageManagerConfig;
+import r01hp.portal.appembed.config.R01HPortalPageProviderConfig;
+import r01hp.portal.appembed.config.R01HPortalPageProviderConfigForFileSystemImpl;
 import r01hp.portal.appembed.help.R01HPortalPageEmbedServletFilterDefaultHelp;
+import r01hp.portal.appembed.metrics.R01HPortalPageAppEmbedMetricsConfig;
 
 
 
@@ -52,6 +55,7 @@ public class R01HLODWarBootstrapGuiceModule
 		// [1] - Get the & bind the portal page app embed 
 		//		 BEWARE the not-embedded urls
 		XMLPropertiesForAppComponent appEmbedXmlProps = xmlProps.forComponent(AppComponent.forId("portalpageappembedfilter"));
+		// a) app embedding
 		final R01HPortalPageAppEmbedServletFilterConfig appEmbedConfig = new R01HPortalPageAppEmbedServletFilterConfig(appEmbedXmlProps)
 																				.withNotPortalEmbeddedUrlPatterns("^/id/.*",
 																												  "^/elda/.*",
@@ -64,9 +68,16 @@ public class R01HLODWarBootstrapGuiceModule
 																												  "^/data/.*",
 																												  
 																												  "^/elda-assets/.*");
-		log.debug("\n\n[PORTAL PAGE APP EMBED CONFIG]>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n{}",
-				  appEmbedConfig.debugInfo());
+		// b) portal page mgr
+		final R01HPortalPageManagerConfig pageMgrConfig = new R01HPortalPageManagerConfig(appEmbedXmlProps);
+		final R01HPortalPageProviderConfig pageProviderConfig = new R01HPortalPageProviderConfigForFileSystemImpl(appEmbedXmlProps);
+		
+		// c) metrics
+		final R01HPortalPageAppEmbedMetricsConfig metricsConfig = new R01HPortalPageAppEmbedMetricsConfig(appEmbedXmlProps);
+
 		binder.install(new R01HPortalPageEmbedServletFilterGuiceModule(appEmbedConfig,
+																	   pageMgrConfig,pageProviderConfig,
+																	   metricsConfig,
 																	   R01HPortalPageEmbedServletFilterDefaultHelp.class));
 		
 		

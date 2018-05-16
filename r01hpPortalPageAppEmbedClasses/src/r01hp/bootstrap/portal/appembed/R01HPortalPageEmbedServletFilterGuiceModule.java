@@ -8,11 +8,13 @@ import com.google.inject.Module;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.uadetector.UserAgentStringParser;
-import r01hp.portal.appembed.R01HPortalContainerPageManager;
 import r01hp.portal.appembed.R01HPortalPageAppEmbedServletFilter;
-import r01hp.portal.appembed.R01HPortalPageAppEmbedServletFilterConfig;
 import r01hp.portal.appembed.R01HUserAgentParser;
+import r01hp.portal.appembed.config.R01HPortalPageAppEmbedServletFilterConfig;
+import r01hp.portal.appembed.config.R01HPortalPageManagerConfig;
+import r01hp.portal.appembed.config.R01HPortalPageProviderConfig;
 import r01hp.portal.appembed.help.R01HPortalPageEmbedServletFilterHelp;
+import r01hp.portal.appembed.metrics.R01HPortalPageAppEmbedMetricsConfig;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -21,7 +23,10 @@ public class R01HPortalPageEmbedServletFilterGuiceModule
 /////////////////////////////////////////////////////////////////////////////////////////
 //  FIELDS
 /////////////////////////////////////////////////////////////////////////////////////////
-	private final R01HPortalPageAppEmbedServletFilterConfig _config;
+	private final R01HPortalPageAppEmbedServletFilterConfig _filterConfig;
+	private final R01HPortalPageManagerConfig _pageManagerConfig;
+	private final R01HPortalPageProviderConfig _pageProviderConfig;
+	private final R01HPortalPageAppEmbedMetricsConfig _metricsConfig;
 	private final Class<? extends R01HPortalPageEmbedServletFilterHelp> _filterHelpType;
 /////////////////////////////////////////////////////////////////////////////////////////
 //  MODULE
@@ -29,18 +34,24 @@ public class R01HPortalPageEmbedServletFilterGuiceModule
 	@Override
 	public void configure(final Binder binder) {
 		log.warn("[START BINDING APP CONTAINER PAGE FILTER]");
-		// config
-		binder.bind(R01HPortalPageAppEmbedServletFilterConfig.class)
-			  .toInstance(_config);
 		
-		// portalpageappembedfilter help
+		// metrics bindings / metrics servlet bindings
+		binder.install(new R01HMetricsGuiceBindingsModule(_metricsConfig));			// if metrics are NOT enabled, nothing is binded
+		
+		// portal page appembed filter help
 		binder.bind(R01HPortalPageEmbedServletFilterHelp.class)
 			  .to(_filterHelpType)
 			  .in(Singleton.class);
 		
-		// Portal page manager
-		binder.bind(R01HPortalContainerPageManager.class)
-			  .in(Singleton.class);
+		// filter config
+		binder.bind(R01HPortalPageAppEmbedServletFilterConfig.class)
+			  .toInstance(_filterConfig);
+		
+		// Portal page manager & page provider
+		binder.bind(R01HPortalPageProviderConfig.class)
+			  .toInstance(_pageProviderConfig);
+		binder.bind(R01HPortalPageManagerConfig.class)
+			  .toInstance(_pageManagerConfig);
 		
 		// Filter as singleton (guice requires it)
 		binder.bind(R01HPortalPageAppEmbedServletFilter.class)

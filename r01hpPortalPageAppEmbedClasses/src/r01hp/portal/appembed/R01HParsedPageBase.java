@@ -13,7 +13,6 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import r01f.types.CanBeRepresentedAsString;
-import r01f.types.Path;
 import r01f.util.types.Strings;
 import r01f.util.types.collections.CollectionUtils;
 import r01f.util.types.collections.Lists;
@@ -31,7 +30,6 @@ abstract class R01HParsedPageBase {
 /////////////////////////////////////////////////////////////////////////////////////////
 //  FIELDS
 /////////////////////////////////////////////////////////////////////////////////////////
-	@Getter	protected Path _pagePath;
 	@Getter protected Head _head;
 	@Getter protected BodyTag _bodyTag;
 /////////////////////////////////////////////////////////////////////////////////////////

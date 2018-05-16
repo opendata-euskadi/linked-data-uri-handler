@@ -10,13 +10,16 @@ import java.util.regex.Matcher;
 import com.google.common.collect.Lists;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import r01f.debug.Debuggable;
 import r01f.io.CharacterStreamSource;
-import r01f.types.Path;
+import r01f.types.url.UrlPath;
 import r01f.util.types.Strings;
 import r01f.util.types.locale.Languages;
+import r01hp.portal.common.R01HPortalOIDs.R01HPortalID;
+import r01hp.portal.common.R01HPortalOIDs.R01HPortalPageID;
 import r01hp.util.parser.R01HToken;
 import r01hp.util.parser.R01HTokenizerObservable;
 import rx.Observable;
@@ -24,7 +27,7 @@ import rx.Observer;
 
 /**
  * Models an app container page where an app html will be included
- * Usually this object will be cached at {@link R01HPortalContainerPageManager}
+ * Usually this object will be cached at {@link R01HPortalPageManager}
  */
 @Slf4j
 @Accessors(prefix="_")
@@ -34,6 +37,15 @@ implements Debuggable {
 /////////////////////////////////////////////////////////////////////////////////////////
 //  FIELDS
 /////////////////////////////////////////////////////////////////////////////////////////
+	@Getter	protected final R01HPortalID _portalId;
+	@Getter protected final R01HPortalPageID _pageId;
+	
+	// cache info
+	@Getter 		protected final boolean _containsLastResourceContainerPageHtml;
+    @Getter 		protected final long _lastModifiedTimeStamp; 			// last time the app container page file was modified
+    @Getter @Setter protected long _lastCheckTimeStamp = -1;    		// last time the modify timestamp was checked
+    @Getter @Setter protected int _hitCount = 0;		        		// Number of times the app container page has been accessed
+	
 	@Getter private String _preHeadHtml;
 	@Getter private String _preAppContainerHtml;
 	@Getter private String _postAppContainerHtml;
@@ -41,24 +53,34 @@ implements Debuggable {
 /////////////////////////////////////////////////////////////////////////////////////////
 //  CONSTRUCTOR
 /////////////////////////////////////////////////////////////////////////////////////////
-	public R01HPortalContainerPage(final Path filePath,
-								   final InputStream is) {
-		this(filePath,
-			 is,Charset.defaultCharset());
+	public R01HPortalContainerPage(final R01HPortalID portalId,final R01HPortalPageID pageId,
+								   final InputStream is,
+								   final long lastModifiedTimeStamp,
+								   final boolean containsLastResourceContainerPageHtml) {
+		this(portalId,pageId,
+			 is,Charset.defaultCharset(),
+			 lastModifiedTimeStamp,
+			 containsLastResourceContainerPageHtml);
 	}
-	public R01HPortalContainerPage(final Path filePath,
-								   final InputStream is,final Charset isCharset) {
-		this(filePath,
-			 new CharacterStreamSource(is,isCharset));
+	public R01HPortalContainerPage(final R01HPortalID portalId,final R01HPortalPageID pageId,
+								   final InputStream is,final Charset isCharset,
+								   final long lastModifiedTimeStamp,
+								   final boolean containsLastResourceContainerPageHtml) {
+		this(portalId,pageId,
+			 new CharacterStreamSource(is,isCharset),
+			 lastModifiedTimeStamp,
+			 containsLastResourceContainerPageHtml);
 	}
-	public R01HPortalContainerPage(final Path filePath,
-								   final CharacterStreamSource appContainerCharReader) {
+	public R01HPortalContainerPage(final R01HPortalID portalId,final R01HPortalPageID pageId,
+								   final CharacterStreamSource appContainerCharReader,
+								   final long lastModifiedTimeStamp,
+								   final boolean containsLastResourceContainerPageHtml) {
 		// Parse ALL the container page disassembling it into:
 		//		pre-head html
 		//		head
 		//		pre-app-include html
 		//		post-app-include html
-		log.trace("Start parsing page {}",filePath);
+		log.trace("Start parsing page {}-{}",portalId,pageId);
 		
 		final StringBuilder preHeadHtmlSb = new StringBuilder();
 		final StringBuilder headTitle = new StringBuilder();
@@ -175,7 +197,7 @@ implements Debuggable {
 							}
 							@Override
 							public void onCompleted() {
-								log.trace("Parse of page {} completed",filePath);
+								log.trace("Parse of page {}-{} completed",portalId,pageId);
 							}
 							@Override
 							public void onError(final Throwable th) {
@@ -183,7 +205,13 @@ implements Debuggable {
 							}
 					 });
 		// set parsed content
-		_pagePath = filePath;
+		_portalId = portalId;
+		_pageId = pageId;
+		
+		_containsLastResourceContainerPageHtml = containsLastResourceContainerPageHtml;
+		_lastModifiedTimeStamp = lastModifiedTimeStamp;
+		_lastCheckTimeStamp = lastModifiedTimeStamp;
+		
 		_preHeadHtml = preHeadHtmlSb.toString();
 		_head = new Head(headTitle.toString(),
 						 headMetas,
@@ -227,7 +255,7 @@ implements Debuggable {
 	 * @param out
 	 * @throws IOException
 	 */
-	public void includeApp(final Path appUrlPath,
+	public void includeApp(final UrlPath appUrlPath,
 						   final InputStream appStream,final Writer out) throws IOException {
 		// Get an included app wrapper
 		R01HIncludedApp includedApp = new R01HIncludedApp(appUrlPath,appStream);
@@ -330,13 +358,25 @@ implements Debuggable {
 /////////////////////////////////////////////////////////////////////////////////////////
 //  DEBUG
 /////////////////////////////////////////////////////////////////////////////////////////
+	public String miniDebugInfo() {
+		return Strings.customized("portal-page={}-{} lastResource={} lastModified={} lastCheck={} hitCount={}",
+								  _portalId,_pageId,
+								  _containsLastResourceContainerPageHtml,
+								  _lastModifiedTimeStamp,_lastCheckTimeStamp,_hitCount);
+	}
 	@Override
 	public CharSequence debugInfo() {
-		return Strings.customized("{}" +
+		return Strings.customized("<html>\n" + 
+								  "{}" +				// pre-head
 								  "<head>\n" +
-								  		"{}\n" +
+								  		"{}" +		// head
 								  "</head>\n" +
-								  "\t{}<!--#include virtual='$CONT'-->{}",
-								  _preHeadHtml,_head.asString(),_preAppContainerHtml,_postAppContainerHtml);
+								  "\t{}" +			// pre-container
+								  "<!--#include virtual='$CONT'-->\n" +
+								  "{}" + 				// post-container
+								  "</html>",
+								  _preHeadHtml,
+								  _head.asString(),
+								  _preAppContainerHtml,_postAppContainerHtml);
 	}
 }

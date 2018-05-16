@@ -5,7 +5,7 @@ import java.io.Writer;
 
 import javax.inject.Inject;
 
-import r01hp.portal.appembed.R01HPortalPageAppEmbedServletFilterConfig;
+import r01hp.portal.appembed.config.R01HPortalPageAppEmbedServletFilterConfig;
 import r01hp.portal.appembed.metrics.R01HPortalPageAppEmbedMetrics;
 
 public class R01HPortalPageEmbedServletFilterDefaultHelp 

@@ -20,9 +20,7 @@ import net.sf.uadetector.UserAgentStringParser;
 import r01f.guids.AppAndComponent;
 import r01f.guids.CommonOIDs.AppCode;
 import r01f.guids.CommonOIDs.AppComponent;
-import r01f.guids.CommonOIDs.Environment;
 import r01f.httpclient.HttpResponseCode;
-import r01f.locale.Language;
 import r01f.servlet.HttpServletRequestUtils;
 import r01f.types.Path;
 import r01f.util.types.Strings;
@@ -31,13 +29,15 @@ import r01f.xmlproperties.XMLPropertiesForApp;
 import r01f.xmlproperties.XMLPropertiesForAppCache;
 import r01f.xmlproperties.XMLPropertiesForAppComponent;
 import r01f.xmlproperties.XMLPropertiesForAppImpl;
+import r01hp.portal.appembed.config.R01HPortalPageAppEmbedServletFilterConfig;
+import r01hp.portal.appembed.config.R01HPortalPageManagerConfig;
+import r01hp.portal.appembed.config.R01HPortalPageProviderConfig;
+import r01hp.portal.appembed.config.R01HPortalPageProviderConfigForFileSystemImpl;
 import r01hp.portal.appembed.help.R01HPortalPageEmbedServletFilterDefaultHelp;
 import r01hp.portal.appembed.help.R01HPortalPageEmbedServletFilterHelp;
 import r01hp.portal.appembed.metrics.R01HPortalPageAppEmbedMetrics;
 import r01hp.portal.appembed.metrics.R01HPortalPageAppEmbedMetricsConfig;
 import r01hp.portal.appembed.metrics.R01HPortalPageAppEmbedMetricsContext;
-import r01hp.portal.common.R01HPortalOIDs.R01HPortalID;
-import r01hp.portal.common.R01HPortalOIDs.R01HPortalPageID;
 
 /**
  * Portal page app include servlet filter
@@ -165,87 +165,86 @@ public class R01HPortalPageAppEmbedServletFilter
 	 * User Agent parser
 	 */
 	private final UserAgentStringParser _userAgentParser;
-    /**
-     * The properties
-     * (it's NOT final because some cofig can be overriden at init() method)
-     */
-	private R01HPortalPageAppEmbedServletFilterConfig _props;
-	/**
-	 * Metrics
-	 * (it's NOT final because some cofig can be overriden at init() method)
-	 */
-	private transient R01HPortalPageAppEmbedMetrics _filterMetrics;
-	/**
-	 * App container page manager (a LRU - last recently used page cache)
-	 */
-	private R01HPortalContainerPageManager _appContainerPortalPageMgr;
+/////////////////////////////////////////////////////////////////////////////////////////
+//	NOT FINAL FIELDS
+//  (they're NOT final because some config can be overridden at init() method)
+/////////////////////////////////////////////////////////////////////////////////////////	
+	private R01HPortalPageAppEmbedServletFilterConfig _config;
+	
+	private R01HPortalPageManagerConfig _pageManagerConfig;
+	private R01HPortalPageProviderConfig _pageProviderConfig;
+	private R01HPortalPageManager _pageManager;					// created at the init() method
+	
+	private R01HPortalPageAppEmbedMetricsConfig _filterMetricsConfig;
+	private R01HPortalPageAppEmbedMetrics _filterMetrics;		// created at the init() method
+/////////////////////////////////////////////////////////////////////////////////////////
+//	OTHER FIELDS
+/////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * Filter config
 	 */
-	private transient FilterConfig _config;
+	private transient FilterConfig _filterConfig;
 ///////////////////////////////////////////////////////////////////////////////////////////
 //  CONSTRUCTOR
 ///////////////////////////////////////////////////////////////////////////////////////////
 	@Inject
-	public R01HPortalPageAppEmbedServletFilter(final R01HPortalPageAppEmbedServletFilterConfig props,
-											   final R01HPortalContainerPageManager appContainerPortalPageMgr,
-											   final R01HPortalPageAppEmbedMetrics metrics,
+	public R01HPortalPageAppEmbedServletFilter(final R01HPortalPageAppEmbedServletFilterConfig config,
+											   final R01HPortalPageProviderConfig pageProviderConfig,final R01HPortalPageManagerConfig pageManagerConfig,
+											   final R01HPortalPageAppEmbedMetricsConfig metricsConfig,
 											   final R01HPortalPageEmbedServletFilterHelp helpRenderer,
 											   final UserAgentStringParser userAgentParser) {
-		log.warn("\n{}",R01HPortalPageAppEmbedServletFilterConfig.filterConfigHelp());
-
-		_props = props;
-
-		_appContainerPortalPageMgr = appContainerPortalPageMgr;
-
+		_config = config;
+		
+		_pageProviderConfig = pageProviderConfig;
+		_pageManagerConfig = pageManagerConfig;
+		
+		_filterMetricsConfig = metricsConfig;
+		
 		_userAgentParser = userAgentParser;
-
-		_filterMetrics = metrics;
-
 		_helpRenderer = helpRenderer;
-
-		_config = null;
 	}
 	/**
-	 * Standalone
+	 * Standalone: used when the filter is configured in web.xml (not loaded with GUICE)
 	 */
 	public R01HPortalPageAppEmbedServletFilter() {
-		log.warn("\n{}",R01HPortalPageAppEmbedServletFilterConfig.filterConfigHelp());
-
 		// [0]: Load the properties
 		XMLPropertiesForAppComponent props = XMLPropertiesBuilder.createForApp(AppCode.forId("r01hp"))
 														  .notUsingCache()
 														  .forComponent(AppComponent.forId("portalpageappembedfilter"));
+		// the properties file does NOT exists
 		if (!props.existsPropertiesFile()) {
 			log.warn("Could NOT load r01hp portal page app embedder filter properties: {config-root-path}/r01hp/r01hp.portalpageappembedfilter.properties.xml)");
 			log.warn("... if the web.xml file contains the filter config it'll be used; if not, a default one will be used instead");
-			_props = new R01HPortalPageAppEmbedServletFilterConfig(Environment.forId("pro"),
-																   false,Path.from("/datos/r01hp/log/"),		// request debug
-																   null,	
-																   new R01HPortalPageAppEmbedContextDefaults(Path.from("/datos/r01hp/file/aplic/"),Path.from("/html/pages/portal"),
-																		   									 R01HPortalID.forId("web01"),R01HPortalPageID.forId("appcontainer"),Language.DEFAULT,
-																		   									 "r01hpPortalCookie"),
-																   new R01HPortalContainerPagesManagerConfig());
-			_filterMetrics = new R01HPortalPageAppEmbedMetrics();
+			
+			// a) default config
+			_config = new R01HPortalPageAppEmbedServletFilterConfig();
+			
+			// b) Page manager
+			_pageManagerConfig = new R01HPortalPageManagerConfig();
+			_pageProviderConfig = new R01HPortalPageProviderConfigForFileSystemImpl();
+			
+			// c) metrics
+			_filterMetricsConfig = new R01HPortalPageAppEmbedMetricsConfig();
 		}
+		// props from config (can be overridden with web.xml info: see init() method)
 		else {
-			// props from config (can be overriden with web.xml info)
-			_props = new R01HPortalPageAppEmbedServletFilterConfig(props);
-
-			final R01HPortalPageAppEmbedMetricsConfig metricsConfig = new R01HPortalPageAppEmbedMetricsConfig(props);
-			_filterMetrics = new R01HPortalPageAppEmbedMetrics(metricsConfig);
+			// a) filter config
+			_config = new R01HPortalPageAppEmbedServletFilterConfig(props);
+			
+			// b) Page Manager
+			_pageManagerConfig = new R01HPortalPageManagerConfig(props);
+			_pageProviderConfig = new R01HPortalPageProviderConfigForFileSystemImpl(props);
+			
+			// c) metrics
+			_filterMetricsConfig = new R01HPortalPageAppEmbedMetricsConfig(props);
 		}
-		log.debug("\n\n[FILTER CONFIG]>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n{}",
-				  _props.debugInfo());
 
-		_appContainerPortalPageMgr = new R01HPortalContainerPageManager(_props.getAppContainerPortalPageManagerConfig());
-
+		// d) user agent parser
 		_userAgentParser = new R01HUserAgentParser();
 
-		_helpRenderer = new R01HPortalPageEmbedServletFilterDefaultHelp(_props,
+		// e) help renderer
+		_helpRenderer = new R01HPortalPageEmbedServletFilterDefaultHelp(_config,
 																		_filterMetrics);
-
-		_config = null;
 	}
 ///////////////////////////////////////////////////////////////////////////////////////////
 // 	INIT & DESTROY
@@ -255,49 +254,93 @@ public class R01HPortalPageAppEmbedServletFilter
         _config = null;
     }
 	@Override
-	public void init(final FilterConfig config) {
-		_config = config;
+	public void init(final FilterConfig filterConfig) {
+		_filterConfig = filterConfig;
 
 		// The config can be overriden in web.xml;
 		// 		1.- By providing a properties file
 		//		2.- By providing individual properties
-		boolean configLoaded = false;
-
+		
 		// {1} - Provided properties file
-		String appCodeAndComponent = config.getInitParameter("r01hp.appembed.configFor");
+		String appCodeAndComponent = filterConfig.getInitParameter("r01hp.appembed.configFor");
 		if (Strings.isNOTNullOrEmpty(appCodeAndComponent)) {
 			AppAndComponent appAndComponent = AppAndComponent.forId(appCodeAndComponent);
 			if (appAndComponent.getAppCode() == null || appAndComponent.getAppComponent() == null) {
 				log.warn(this.getClass().getSimpleName() + " filter init property named 'r01hp.appembed.configFor' = " + appCodeAndComponent + " is NOT valid");
-			} else {
+			} 
+			else {
 				XMLPropertiesForApp xmlProps = new XMLPropertiesForAppImpl(new XMLPropertiesForAppCache(appAndComponent.getAppCode()));
 				XMLPropertiesForAppComponent props = xmlProps.forComponent(appAndComponent.getAppComponent());
 				if (props.existsPropertiesFile()) {
-					log.warn("Overriding config with properties file set at " + this.getClass().getSimpleName() + " filter init property named 'r01hp.appembed.configFor' = " + appCodeAndComponent );
-					// Load the properties file
-					_props = new R01HPortalPageAppEmbedServletFilterConfig(props);
+					log.warn("[web.xml]: Overriding config with properties file set at " + this.getClass().getSimpleName() + " filter init property named 'r01hp.appembed.configFor' = " + appCodeAndComponent );
+					// a) filter
+					R01HPortalPageAppEmbedServletFilterConfig otherConfig = new R01HPortalPageAppEmbedServletFilterConfig(props);
+					_config = _config != null 
+									? _config.cloneOverriddenWith(otherConfig)
+									: otherConfig;
 
-					final R01HPortalPageAppEmbedMetricsConfig metricsConfig = new R01HPortalPageAppEmbedMetricsConfig(props);
-					_filterMetrics = new R01HPortalPageAppEmbedMetrics(metricsConfig);
-
-					log.debug("\n\n[WEB.XML INIT PARAMS OVERRIDDEN CONFIG] load config from={} properties file>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n{}",
-							  appCodeAndComponent,
-							  _props.debugInfo());
-
-					configLoaded = true;
+					// b) page manager
+					R01HPortalPageManagerConfig otherPageMgerConfig = new R01HPortalPageManagerConfig(props);
+					_pageManagerConfig = _pageManagerConfig != null
+												? _pageManagerConfig.cloneOverriddenWith(otherPageMgerConfig)
+												: otherPageMgerConfig;
+					R01HPortalPageProviderConfigForFileSystemImpl otherPageProviderConfig = new R01HPortalPageProviderConfigForFileSystemImpl(props);
+					_pageProviderConfig = _pageProviderConfig != null
+												? _pageProviderConfig.cloneOverriddenWith(otherPageProviderConfig)
+												: otherPageProviderConfig;
+												
+					// b) metrics
+					R01HPortalPageAppEmbedMetricsConfig otherMetricsConfig = new R01HPortalPageAppEmbedMetricsConfig(props);
+					_filterMetricsConfig = _filterMetricsConfig != null 
+												? _filterMetricsConfig.cloneOverriddenWith(otherMetricsConfig)
+									  			: otherMetricsConfig;
 				} else {
 					log.warn("The properties file set at " + this.getClass().getSimpleName() + " filter init property named 'r01hp.appembed.configFor' = " + appCodeAndComponent + " does NOT exists");
 				}
 			}
 		}
+		
 		// [2] - Individual properties file
-		_filterMetrics = _filterMetrics.cloneOverridenWith(config);
-		_props = _props.cloneOverridenWith(config);
+		// a) config
+		R01HPortalPageAppEmbedServletFilterConfig otherConfig = new R01HPortalPageAppEmbedServletFilterConfig(filterConfig);
+		_config = _config != null 
+					? _config.cloneOverriddenWith(otherConfig)
+					: otherConfig;
 
-		log.debug("\n\n[WEB.XML INT PARAMS - OVERRIDDEN FILTER CONFIG]>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n{}",
-				  _props.debugInfo());
-
-		_appContainerPortalPageMgr = new R01HPortalContainerPageManager(_props.getAppContainerPortalPageManagerConfig());
+		// b) page manager
+		R01HPortalPageManagerConfig otherPageMgrConfig = new R01HPortalPageManagerConfig(filterConfig);
+		_pageManagerConfig = _pageManagerConfig != null 
+									? _pageManagerConfig.cloneOverriddenWith(otherPageMgrConfig)
+									: otherPageMgrConfig;
+		R01HPortalPageProviderConfig otherPageProviderConfig = new R01HPortalPageProviderConfigForFileSystemImpl(filterConfig);
+		_pageProviderConfig = _pageProviderConfig != null
+									? _pageProviderConfig.cloneOverriddenWith(otherPageProviderConfig)
+									: otherPageProviderConfig;
+										
+		// c) metrics
+		R01HPortalPageAppEmbedMetricsConfig otherMetricsConfig = new R01HPortalPageAppEmbedMetricsConfig(filterConfig);
+		_filterMetricsConfig = _filterMetricsConfig != null 
+										? _filterMetricsConfig.cloneOverriddenWith(otherMetricsConfig)
+										: otherMetricsConfig;
+		
+		// [3] - A bit of logging
+		log.info("\n\n[PORTAL PAGE APP EMBED FILTER]**************************************************************************************");
+		log.info("\n[APP EMBED CONFIG].......................\n{}",
+				 _config.debugInfo());
+		log.info("\n[PAGE MANAGER CONFIG]....................\n{}",
+				 _pageManagerConfig.debugInfo());
+		log.info("\n[PAGE PROVIDER CONFIG]...................\n{}",
+				 _pageProviderConfig.debugInfo());
+		log.info("\n[PORTAL METRICS CONFIG]..................\n{}",
+				 _filterMetricsConfig.debugInfo());
+		log.info("\n*********************************************************************************************************************");
+		
+		
+		// [4] - Create the managers
+		log.info("... create the portal page app embed filter page manager & metrics manager");
+		_pageManager = new R01HPortalPageManager(_pageManagerConfig,
+												 new R01HPortalPageProviderForFileSystem(_pageProviderConfig));
+		_filterMetrics = new R01HPortalPageAppEmbedMetrics(_filterMetricsConfig);
 	}
 /////////////////////////////////////////////////////////////////////////////////////////
 //  FILTER
@@ -373,7 +416,7 @@ public class R01HPortalPageAppEmbedServletFilter
 
         // create a context object that contains data obtained from the request
         R01HPortalPageAppEmbedContext ctx = new R01HPortalPageAppEmbedContext(realHttpReq,
-        																	  _props.getContextDefaults(),_props.getNotPortalPageEmbeddedResources(),
+        																	  _config.getContextDefaults(),_config.getNotPortalPageEmbeddedResources(),
         																	  userAgent);
 
         // >>>>>>>>>>>>>>>>>> Init app container page include
@@ -411,8 +454,8 @@ public class R01HPortalPageAppEmbedServletFilter
         else {
 	        // if a debug param is received at the request query string, all the request & response are written to a debug file
 	        // BEWARE!!! DO NOT ENABLE AT PROD ENV!!!
-	        R01HPortalPageAppEmbedServletFilterLogger filterLogger = new R01HPortalPageAppEmbedServletFilterLogger(_props.isRequestDebuggingGloballyEnabled(),ctx.isRequestDebuggingEnabled(),
-	        																		 							   _props.getRequestDebugFolderPath(),ctx.getRequestDebugToken());
+	        R01HPortalPageAppEmbedServletFilterLogger filterLogger = new R01HPortalPageAppEmbedServletFilterLogger(_config.isRequestDebuggingGloballyEnabled(),ctx.isRequestDebuggingEnabled(),
+	        																		 							   _config.getRequestDebugFolderPath(),ctx.getRequestDebugToken());
 
 	        // [0]: log the request data
 	        filterLogger.logMessage("[START] filtering: " + ctx.getRequestedUrlPath());
@@ -459,7 +502,8 @@ public class R01HPortalPageAppEmbedServletFilter
 	       	// [3]: Do the app container page include --> at this point, the filter's downstream module (the app or proxy servlet)
 	        //											  has done it's work and the app html is buffered inside the fake http response
 	        //											  ... it's now time to do the include
-        	R01HPortalContainerPage appContainerPortalPage = _appContainerPortalPageMgr.getAppContainerPage(ctx.getAppContainerPageFilePath());
+        	R01HPortalContainerPage appContainerPortalPage = _pageManager.getAppContainerPage(ctx.getPortalId(),
+        																									ctx.getPageId());
 			appContainerPortalPage.includeApp(ctx,
 											  fakeHttpResponse);
         }

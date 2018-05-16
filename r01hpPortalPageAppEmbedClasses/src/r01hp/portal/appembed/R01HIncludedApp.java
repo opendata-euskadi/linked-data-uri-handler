@@ -14,7 +14,7 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import r01f.io.CharacterStreamSource;
-import r01f.types.Path;
+import r01f.types.url.UrlPath;
 import r01f.util.types.Strings;
 import r01f.util.types.collections.CollectionUtils;
 import r01hp.util.parser.R01HToken;
@@ -35,6 +35,8 @@ extends R01HParsedPageBase {
 /////////////////////////////////////////////////////////////////////////////////////////
 //  FIELDS
 /////////////////////////////////////////////////////////////////////////////////////////
+	@Getter private final UrlPath _appUrlPath;
+	
 	@Getter private final String _preHeadHtml;
 			private final String _erroneouslyDetectedAtPreHead;
 			private final CharacterStreamSource _restOfHtmlCharReader;
@@ -42,22 +44,22 @@ extends R01HParsedPageBase {
 /////////////////////////////////////////////////////////////////////////////////////////
 //  CONSTRUCTOR
 /////////////////////////////////////////////////////////////////////////////////////////
-	public R01HIncludedApp(final Path includedAppUrlPath,
+	public R01HIncludedApp(final UrlPath includedAppUrlPath,
 						   final InputStream is) {
 		this(includedAppUrlPath,
 			 is,Charset.defaultCharset());
 	}
-	public R01HIncludedApp(final Path includedAppUrlPath,
+	public R01HIncludedApp(final UrlPath includedAppUrlPath,
 						   final InputStream is,final Charset isCharset) {
 		this(includedAppUrlPath,
 			 new CharacterStreamSource(is,isCharset));
 	}
-	public R01HIncludedApp(final Path includedAppUrlPath,
+	public R01HIncludedApp(final UrlPath includedAppUrlPath,
 						   final CharBuffer charBuffer) {
 		this(includedAppUrlPath,
 			 new CharacterStreamSource(charBuffer));
 	}
-	public R01HIncludedApp(final Path includedAppUrlPath,
+	public R01HIncludedApp(final UrlPath includedAppUrlPath,
 						   final CharacterStreamSource includedAppCharReader) {
 		// Parses the included app but ONLY until the head and body tag has been parsed 
 		// (parses all the head content BUT ONLY the body tag, NOT the whole body content: it'll be a waste of resources
@@ -315,7 +317,7 @@ extends R01HParsedPageBase {
 		}
 		
 		// set parsed content
-		_pagePath = includedAppUrlPath;
+		_appUrlPath = includedAppUrlPath;
 		_preHeadHtml = preHeadHtmlSb.toString();
 		_head = (Strings.isNOTNullOrEmpty(headTitle) 
 			  || CollectionUtils.hasData(headMetas) 
@@ -393,7 +395,8 @@ extends R01HParsedPageBase {
 							}
 							@Override
 							public void onCompleted() {
-								log.trace("Parse of included app {} completed",_pagePath);
+								log.trace("Parse of included app {} completed",
+										  _appUrlPath);
 							}
 							@Override
 							public void onError(final Throwable th) {

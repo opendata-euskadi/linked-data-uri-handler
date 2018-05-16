@@ -23,9 +23,7 @@ import r01f.servlet.HttpServletRequestUtils;
 import r01f.types.Path;
 import r01f.types.url.Url;
 import r01f.types.url.UrlPath;
-import r01f.util.types.Paths;
 import r01f.util.types.Strings;
-import r01f.util.types.Strings.StringIsContainedWrapper;
 import r01f.util.types.collections.CollectionUtils;
 import r01f.util.types.locale.Languages;
 import r01hp.portal.common.R01HPortalOIDs;
@@ -49,7 +47,6 @@ public class R01HPortalPageAppEmbedContext {
 	@Getter private final R01HPortalID _portalId;
 	@Getter private final R01HPortalPageID _pageId;
 	@Getter private final Language _lang;
-	@Getter private final Path _appContainerPageFilePath;
 	@Getter private final boolean _includeInAppContainerPageDisabled;
 	@Getter private final R01HUserAgentData _userAgentData;
 	
@@ -57,7 +54,7 @@ public class R01HPortalPageAppEmbedContext {
 /////////////////////////////////////////////////////////////////////////////////////////
 //  CONSTRUCTOR
 /////////////////////////////////////////////////////////////////////////////////////////
-	R01HPortalPageAppEmbedContext(final Path appUrlPath) {
+	R01HPortalPageAppEmbedContext(final UrlPath appUrlPath) {
 		// used just for testing
 		_clientIp = "testIp";
 		_internalIp = HttpServletRequestUtils.isInternalIP(_clientIp);
@@ -65,7 +62,6 @@ public class R01HPortalPageAppEmbedContext {
 		_portalId = R01HPortalID.forId("testPortal");
 		_pageId = R01HPortalPageID.forId("testPortalpage");
 		_lang = Language.DEFAULT;
-		_appContainerPageFilePath = appUrlPath;
 		_includeInAppContainerPageDisabled = false;
 		_userAgentData = null;
 		_requestDebugToken = null;
@@ -172,7 +168,6 @@ public class R01HPortalPageAppEmbedContext {
         	_portalId = null;
         	_pageId = null;
         	_lang = null;
-        	_appContainerPageFilePath = null;
         	_requestDebugToken = null;
         	return;
         }
@@ -249,22 +244,10 @@ public class R01HPortalPageAppEmbedContext {
 		        _pageId = defaults.getDefaultAppContainerPageId();
 		        _lang = defaults.getDefaultLanguage();
         		log.debug("The portal/page/lang was NOT available as query string params, tried the {} cookie BUT it was NOT present... default to R01HPortal={}, R01HPage={}, R01HLang={}",
-        				  defaults.getPortalCookieName(),_portalId,_pageId,_lang);
+        				  defaults.getPortalCookieName(),
+        				  _portalId,_pageId,_lang);
         	}
         }
-
-        // Container page file path
-        _appContainerPageFilePath = Paths.forPaths().join(defaults.getAppContainerPageFilesRootPath(),
-        												_portalId,
-        												defaults.getAppContainerPageFilesRelPath(),
-        									  			Strings.customized("{}-{}.shtml",
-									    						  			 _portalId,_pageId));
-    	log.trace("Default container page is R01HPortal={}, R01HPage={}, R01HLang={}",
-    				defaults.getDefaultPortalId(), 
-    				defaults.getDefaultAppContainerPageId(), 
-    				defaults.getDefaultLanguage());
-    	log.debug("The container page that will be used is in the path={}",
-    			  _appContainerPageFilePath);
     	
     	// Request debug token: if the request contains a query string param like: r01hpReqDebug=myRequestDebug
     	//						the filter will create a DEBUG file named myRequestDebug.log that will contain

@@ -44,6 +44,10 @@ public class R01HLODWarServletContextListener
 /////////////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public void contextInitialized(final ServletContextEvent servletContextEvent) {
+		log.warn("\n" +
+				 "*****************************************************************************\n" +
+				 "BOOTSTRAPPING LinkedData WAR\n" +
+				 "*****************************************************************************\n");
 	    final ServletContext servletContext = servletContextEvent.getServletContext();
 	
 		// BEWARE!!! avoid NPE when calling servletContext.getRealPath(..) in .war or .ear deployments
@@ -170,6 +174,7 @@ public class R01HLODWarServletContextListener
 //	
 /////////////////////////////////////////////////////////////////////////////////////////
 	private Injector _createInjector() {
+		log.warn("warming up guice injector");
 		return Guice.createInjector(new R01HLODWarBootstrapGuiceModule());
 	}
 /////////////////////////////////////////////////////////////////////////////////////////

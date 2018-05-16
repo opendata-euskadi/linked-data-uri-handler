@@ -15,96 +15,83 @@
    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
    KIND, either express or implied.  See the License for the
    specific language governing permissions and limitations
-   under the License.    
+   under the License.
 -->
-<ivy-module version="2.3" 
+<ivy-module version="2.3"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd"
-			xmlns:e="http://ant.apache.org/ivy/extra" 
+			xmlns:e="http://ant.apache.org/ivy/extra"
 			xmlns:m="http://ant.apache.org/ivy/maven">
 
     <info organisation="com.ejie.r01.r01hp"
-          module="r01hpLODWar"
+          module="r01hpPortalPageAppEmbedClasses"
           status="integration"
-          revision="1.1.0">
+          revision="1.3">
 	</info>
-	
-	<!-- 
-	IMPORTANT! 
-		see /r01fbClasses/ivy.read.me about how Ivy works 
+
+	<!--
+	IMPORTANT!
+		see /r01fbClasses/ivy.read.me about how Ivy works
 	-->
-	<configurations>
+	<configurations defaultconf="default" defaultconfmapping="default->default;compile->compile;runtime->runtime" >
 		<conf name="default" description="shortcut to runtime and master dependencies"/>
 		<conf name="compile" description="Used ONLY at compile time" />
 		<conf name="runtime" description="Not required at compile time BUT required for execution and so deployed to a server"/>
 	</configurations>
 
-	<!-- 
 	<publications>
-		<artifact name="r01hpLODWar" type="jar" ext="jar" />
-		<artifact name="r01hpLODWar" type="pom" ext="pom" />
+		<artifact name="r01hpPortalPageAppEmbedClasses" type="jar" ext="jar" />
+		<artifact name="r01hpPortalPageAppEmbedClasses" type="pom" ext="pom" />
 	</publications>
-	-->
-	
-	<dependencies defaultconf="default->default">	
+
+	<dependencies defaultconf="default->default">
 		<!-- ============================================================================================================================== -->
 		<!-- R01FB                                                                                                                          -->
 		<!-- ============================================================================================================================== -->
-		<dependency org="com.ejie.r01.r01fb" name="r01fbPropertiesClasses" rev="latest.integration" 
+		<dependency org="com.ejie.r01.r01fb" name="r01fbBaseClasses" rev="1.2.0" 
 					conf="default->default;compile->compile;runtime->runtime">
+			<exclude org="commons-codec" name="commons-codec"/>
 		</dependency>
-		
-		<dependency org="com.ejie.r01.r01fb" name="r01fbWebProfileClasses" rev="latest.integration" 
-					conf="default->default;compile->compile;runtime->runtime">
-			<!-- BEWARE!! jersey-guice MUST be located at each WAR's WEB-INF/lib folder -->
-			<exclude org="com.sun.jersey.contribs" module="jersey-guice"/>
-			<exclude org="org.springframework"/>
 					
+		<dependency org="com.ejie.r01.r01fb" name="r01fbPropertiesClasses" rev="1.2.0" 
+					conf="default->default;compile->compile;runtime->runtime"/>
+					
+		<dependency org="com.ejie.r01.r01fb" name="r01fbPropertiesGuiceClasses" rev="1.2.0" 
+					conf="default->default;compile->compile;runtime->runtime"/>
+		
+		<dependency org="com.ejie.r01.r01fb" name="r01fbFileStoreClasses" rev="1.2.0" 
+					conf="default->default;compile->compile;runtime->runtime"/>
+					
+		<dependency org="com.ejie.r01.r01fb" name="r01fbWebProfileClasses" rev="1.2.0" 
+					conf="default->default;compile->compile;runtime->runtime">
+			<!-- R01HPProxy does NOT use Jersey -->
+			<exclude org="com.sun.jersey"/>
+			<exclude org="com.sun.jersey.contribs"/>
+			<exclude org="javax.ws.rs"/>
+			<exclude org="org.springframework"/>
+			
 			<!-- BEWARE!! the guice-servlet lib is located at each WAR's WEB-INF/lib folder -->
 			<exclude org="com.google.inject.extensions" name="guice-servlet"/>
-		</dependency> 
-		
-		<!-- used at to filter unauthorized access to triple-store console -->
-		<dependency org="com.ejie.r01.r01fb" name="r01fbEJIEClasses" rev="latest.integration" 
-					conf="default->default;compile->compile;runtime->runtime">
-			<!-- 
-				BEWARE!!! 	Xerces / Xalan / xml-apis dependencies are a nightmare in weblogic
-							EXCLUDE these deps when deploying in weblogic server
-							(see: https://stackoverflow.com/questions/11677572/dealing-with-xerces-hell-in-java-maven)
-			-->
-			<!--
-			<exclude org="xml-apis" name="xml-apis" />
-			<exclude org="xalan" name="xalan" />
-			<exclude org="xerces" name="xercesImpl" />
-			<exclude org="javax.xml.rpc" name="javax.xml.rpc-api" />
-			-->
 		</dependency>
-		
+
 		<!-- ============================================================================================================================== -->
-		<!-- LOD                                                                                                                            -->
-		<!-- ============================================================================================================================== -->		
-		<dependency org="com.ejie.r01.r01hp" name="r01hpLODClasses" rev="latest.integration" 
+		<!-- R01HP: Metrics                                                                                                                 -->
+		<!-- ============================================================================================================================== -->
+		<dependency org="com.ejie.r01.r01hp" name="r01hpPortalPageAppEmbedMetricsClasses" rev="latest.integration" 
 					conf="default->default;compile->compile;runtime->runtime">
 		</dependency>
+
+		<!-- ============================================================================================================================== -->
+		<!-- RxJava                                                                                                                         -->
+		<!-- ============================================================================================================================== -->
+		<dependency org="io.reactivex" name="rxjava" rev="1.1.6" />
 		
 		<!-- ============================================================================================================================== -->
-		<!-- R01HPPortalPageAppEmbedFilter                                                                                                  -->
+		<!-- User Agent detector                                                                                                            -->
 		<!-- ============================================================================================================================== -->
-		<dependency org="com.ejie.r01.r01hp" name="r01hpPortalPageAppEmbedClasses" rev="latest.integration" 
-					conf="default->default;compile->compile;runtime->runtime">
-		</dependency>
-		
-		<!-- ============================================================================================================================== -->
-		<!-- R01FB: Marshaller (just to import Jackson libraries required by elda)                                                          -->
-		<!-- ============================================================================================================================== -->
-		<dependency org="com.ejie.r01.r01fb" name="r01fbObjectStreamerClasses" rev="latest.integration" 
-					conf="default->default;compile->compile;runtime->runtime">
-		</dependency>
-					
-		<!-- ============================================================================================================================== -->
-		<!-- ELDA REQUIRED                                                                                                                  -->
-		<!-- ============================================================================================================================== -->
-		<dependency org="com.sun.jersey" name="jersey-json" rev="1.19.4" />		
+		<dependency org="net.sf.uadetector" name="uadetector-core" rev="0.9.22"/>
+		<dependency org="net.sf.uadetector" name="uadetector-resources" rev="2014.10"/>	<!-- User agent database -->
+
 	</dependencies>
 	
 </ivy-module>

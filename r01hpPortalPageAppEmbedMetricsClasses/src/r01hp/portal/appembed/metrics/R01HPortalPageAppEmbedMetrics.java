@@ -3,7 +3,6 @@ package r01hp.portal.appembed.metrics;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.servlet.FilterConfig;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
@@ -15,7 +14,6 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import r01f.httpclient.HttpResponseCode;
 import r01f.types.Path;
-import r01f.util.types.Strings;
 
 @Slf4j
 @Accessors(prefix="_")
@@ -48,24 +46,6 @@ public class R01HPortalPageAppEmbedMetrics {
 		// Init the metrics
 		_globalMetrics = new GlobalMetrics();
 		_appModuleMetrics = Maps.newHashMapWithExpectedSize(100);
-	}
-	/**
-	 * Creates NEW config object whose properties are overriden with the ones at web.xml file
-	 * @param config
-	 * @return
-	 */
-	public R01HPortalPageAppEmbedMetrics cloneOverridenWith(final FilterConfig config) {
-		R01HPortalPageAppEmbedMetrics outConfig = this;
-		
-		String metricsEnabledStr = config.getInitParameter("r01hp.appembed.metricsEnabled");
-		if (Strings.isNOTNullOrEmpty(metricsEnabledStr)) {
-			log.warn("Metrics overriden al web.xml (servlet filter init params): {}",
-					 metricsEnabledStr);
-			boolean metricsEnabled = Boolean.parseBoolean(metricsEnabledStr);			
-			outConfig = new R01HPortalPageAppEmbedMetrics(new R01HPortalPageAppEmbedMetricsConfig(metricsEnabled),
-														  this.getRegistry());
-		}
-		return outConfig;
 	}
 /////////////////////////////////////////////////////////////////////////////////////////
 //	METHODS

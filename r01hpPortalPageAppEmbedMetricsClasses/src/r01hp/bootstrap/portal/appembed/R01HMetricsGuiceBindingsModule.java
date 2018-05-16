@@ -39,7 +39,7 @@ public class R01HMetricsGuiceBindingsModule
 		if (_metricsConfig.isEnabled()) {
 			// config
 			binder.bind(R01HPortalPageAppEmbedMetricsConfig.class)
-			  .toInstance(_metricsConfig);
+			  	  .toInstance(_metricsConfig);
 		
 			// Bind a metrics registry instance
 			final MetricRegistry metricsRegistryInstance = new MetricRegistry();
