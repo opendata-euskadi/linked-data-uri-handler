@@ -1,18 +1,20 @@
 package r01hp.lod.urihandler;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.regex.Pattern;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import com.google.common.collect.Iterables;
+
 import lombok.extern.slf4j.Slf4j;
 import r01f.httpclient.HttpClient;
 import r01f.httpclient.HttpRequestHeader;
+import r01f.types.url.Host;
 import r01f.types.url.Url;
-import r01f.types.url.UrlPath;
 import r01f.types.url.UrlQueryString;
 import r01f.types.url.UrlQueryStringParam;
 import r01f.util.types.Strings;
@@ -25,14 +27,14 @@ import r01hp.lod.config.R01HLODURIHandlerConfig;
 public class R01HLODMainEntityOfPageResolverByDefault 
   implements R01HLODMainEntityOfPageResolver {
 	
-	// BEWARE!!! do NOT make a direct call to a blazegraph instance,
+	// BEWARE!!! do NOT make a direct call to a triplestore instance,
 	//			 use the proxy in order to have load balance and redundancy
     //
     //                   +----------------+
     //                   |     LODWAR     |
     //                   |            |   +-------------+
     //                   +------------|---+             |
-    //                    |    proxy  v  |        DO NOT DO THIS
+    //                    |    proxy  v  |        DO NOT DO THIS > direct call to a triplestore instance (DO NOT DO THIS!!!)
     //                    +--------------+              |
     //                        |     |                   |
     //           +------------+     +--------------+    |
@@ -41,12 +43,6 @@ public class R01HLODMainEntityOfPageResolverByDefault
     //   |  TripleStore    |              |  TripleStore    |
     //   +-----------------+              +-----------------+
 	//
-	// direct call to a blazegraph instance (DO NOT DO THIS!!!)
-	
-/////////////////////////////////////////////////////////////////////////////////////////
-//	CONSTANTS
-/////////////////////////////////////////////////////////////////////////////////////////
-	private static final Pattern PROPERTY_PATTERN = Pattern.compile("^/id/property/.*");
 	
 /////////////////////////////////////////////////////////////////////////////////////////
 //	FIELDS
@@ -63,42 +59,19 @@ public class R01HLODMainEntityOfPageResolverByDefault
 /////////////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public boolean isMainEntityOfPage(final Url uri) {
-		// resources that do NOT have a web page for sure:
-		if (uri == null) return false;
-		UrlPath urlPath = uri.getUrlPath();
-		if (urlPath == null
-		 || urlPath.matches(PROPERTY_PATTERN)) {
-			return false;
-		}
-		
 		try {
 			// Create a triplestore query like
 			//		http://tripleStoreSPARQLEndPoint?query=PREFIX schema:<http://schema.org/> 
-			//			    							   ASK { <URI> schema:mainEntityOfPage ?page } 
-			// [1] - Get the language from the requested host
-			R01HLODTripleStoreQuery tripleStoreQuery = R01HLODTripleStoreQuery.isMainEntityOfPage(uri);	
-			Url isMainEntityOfPageSPARQLUrl = Url.from(// host
-													   _uriHandlerConfig.getLodWarHost(),
-													   // path: /r01hpLODWar/sparql/execute
-													   UrlPath.from("r01hpLODWar",R01HLODURIType.SPARQL.getPathToken(),	// /sparql
-														  			"execute"), 							// /execute
-													   // ?query=
-													   UrlQueryString.fromParams(UrlQueryStringParam.of("query",
-																										tripleStoreQuery.asString()))); 
-			log.info("IS MAIN ENTITY OF PAGE URL={}",
-					 isMainEntityOfPageSPARQLUrl);
-			// Exec the query and read the content
-			InputStream is = HttpClient.forUrl(isMainEntityOfPageSPARQLUrl)
-									   .withHeaders(HttpRequestHeader.create("Accept",
-											   								 R01HMIMEType.JSON.asString()))
-									   .GET()
-									   .loadAsStream()
-									   		.directNoAuthConnected();
-			
+			//			    							   ASK { <URI> schema:mainEntityOfPage ?page }
 			//			Eg:{
 			//			 "head": {},
 			//			 "boolean": true
 			//			}
+			R01HLODTripleStoreQuery tripleStoreQuery = R01HLODTripleStoreQuery.isMainEntityOfPage(uri);	
+			
+			// Exec the query and read the content
+			InputStream is = _execQuery(tripleStoreQuery);
+			
 	        JSONParser parser = new JSONParser();
 	        JSONObject obj = (JSONObject)parser.parse(new InputStreamReader(is));
 	        boolean outJson = obj.containsKey("boolean") ? ((Boolean)obj.get("boolean")).booleanValue()
@@ -113,41 +86,10 @@ public class R01HLODMainEntityOfPageResolverByDefault
 	}
 	@Override
 	public Url mainEntityOfPage(final Url uri) {
-		// resources that do NOT have a web page for sure:
-		if (uri == null) return null;
-		UrlPath urlPath = uri.getUrlPath();
-		if (urlPath == null
-		 || urlPath.matches(PROPERTY_PATTERN)) {
-			return null;
-		}
-		
 		try {	
 			// Create a triplestore query like
 			//		http://tripleStoreSPARQLEndPoint?query=PREFIX schema:<http://schema.org/> 
 			//			    							  SELECT ?page WHERE { <{}> schema:mainEntityOfPage ?page . }
-			// [1] - Get the language from the requested host
-			R01HLODTripleStoreQuery tripleStoreQuery = R01HLODTripleStoreQuery.mainEntityOfPage(uri);	
-			Url mainEntityOfPageSPARQLUrl = Url.from(// host
-													   _uriHandlerConfig.getLodWarHost(),
-													   // path: /r01hpLODWar/sparql/execute
-													   UrlPath.from("r01hpLODWar",R01HLODURIType.SPARQL.getPathToken(),	// /sparql
-														  			"execute"), 							// /execute
-													   // ?query= (replace localhost with data.euskadi.eus)
-													   UrlQueryString.fromParams(UrlQueryStringParam.of("query",
-																										tripleStoreQuery.asString()
-																											.replaceAll("localhost",	// beware local testing
-																														_uriHandlerConfig.getDataSite()
-																																		 .getHost().getId())))); 
-			
-			log.info("MAIN ENTITY OF PAGE URL={}",
-					 mainEntityOfPageSPARQLUrl);
-			// Exec the query and read the content
-			InputStream is = HttpClient.forUrl(mainEntityOfPageSPARQLUrl)
-									   .withHeaders(HttpRequestHeader.create("Accept",
-											   								 R01HMIMEType.JSON.asString()))
-									   .GET()
-									   .loadAsStream()
-									   		.directNoAuthConnected();
 			//			Eg: "results": { 
 			//					"bindings": [ 
 			//				 	{ 
@@ -164,12 +106,13 @@ public class R01HLODMainEntityOfPageResolverByDefault
 			//				 	}
 			//				 	]
 			//				}
-				 	
+			R01HLODTripleStoreQuery tripleStoreQuery = R01HLODTripleStoreQuery.mainEntityOfPage(uri);	
+			InputStream is = _execQuery(tripleStoreQuery);
 				 
 			JSONParser parser = new JSONParser();
 	        JSONObject obj = (JSONObject)parser.parse(new InputStreamReader(is));
 	        JSONArray pages = (JSONArray)((JSONObject) obj.get("results")).get("bindings");
-	        //TODO Get language webPage. 
+	        // TODO Get language webPage. 
 	        String webPage =  pages.size() > 0 ? ((JSONObject)((JSONObject) pages.get(0)).get("page")).get("value").toString() : null;
 			Url outWebPage = Strings.isNOTNullOrEmpty(webPage) ? Url.from(webPage)
 															   : null;
@@ -182,6 +125,47 @@ public class R01HLODMainEntityOfPageResolverByDefault
         }
 		return null;
 	}
-	
+/////////////////////////////////////////////////////////////////////////////////////////
+//	
+/////////////////////////////////////////////////////////////////////////////////////////
+	private InputStream _execQuery(final R01HLODTripleStoreQuery tripleStoreQuery) throws IOException {
+		// The query is proxied throught the WAR's proxy to the triple-store:
+	    //                   +----------------+
+	    //                   |     LODWAR     |
+	    //                   |            |   +-------------+
+	    //                   +------------|---+             |
+	    //                    |    proxy  v  |        DO NOT DO THIS
+	    //                    +--------------+              |
+	    //                        |     |                   |
+	    //           +------------+     +--------------+    |
+	    //           |                                 |    |
+	    //   +-----------------+              +-----------------+
+	    //   |  TripleStore    |              |  TripleStore    |
+	    //   +-----------------+              +-----------------+
+		
+		// Pick any app server host 
+		// TODO use netflix's ribbon or any other client-side balance library
+		Host appServerHost = Iterables.getFirst(_uriHandlerConfig.getAppServerConfig().getAppServerHosts(),
+												Host.from("localhost:8080"));
+		Url qryUrl = Url.from(// host
+							  appServerHost,
+							  // path: /r01hpLODWar/read/blazegraph/sparql/execute
+							  _uriHandlerConfig.getAppServerConfig().getLodWarUrlPath()																			// r01hpLODWar/
+							  										.joinedWith(_uriHandlerConfig.getTripleStoreConfig().getInternalSPARQLEndPointUrlPath())	// /read/blazegraph/namespace/euskadi_db/sparql/
+								  								    .joinedWith("execute"), 																	// /execute
+							  // ?query= (replace id.localhost with id.euskadi.eus)
+							  UrlQueryString.fromParams(UrlQueryStringParam.of("query",
+																			    tripleStoreQuery.asString())));
+		log.info("IS MAIN ENTITY OF PAGE URL={}",
+				 qryUrl);
+		// Exec the query and read the content
+		InputStream is = HttpClient.forUrl(qryUrl)
+								   .withHeaders(HttpRequestHeader.create("Accept",
+										   								 R01HMIMEType.JSON.asString()))
+								   .GET()
+								   .loadAsStream()
+								   		.directNoAuthConnected();
+		return is;
+	}
 
 }

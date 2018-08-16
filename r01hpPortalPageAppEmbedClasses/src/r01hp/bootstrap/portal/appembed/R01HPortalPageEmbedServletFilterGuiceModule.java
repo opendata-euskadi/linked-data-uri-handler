@@ -12,7 +12,7 @@ import r01hp.portal.appembed.R01HPortalPageAppEmbedServletFilter;
 import r01hp.portal.appembed.R01HUserAgentParser;
 import r01hp.portal.appembed.config.R01HPortalPageAppEmbedServletFilterConfig;
 import r01hp.portal.appembed.config.R01HPortalPageManagerConfig;
-import r01hp.portal.appembed.config.R01HPortalPageProviderConfig;
+import r01hp.portal.appembed.config.R01HPortalPageLoaderConfig;
 import r01hp.portal.appembed.help.R01HPortalPageEmbedServletFilterHelp;
 import r01hp.portal.appembed.metrics.R01HPortalPageAppEmbedMetricsConfig;
 
@@ -25,7 +25,7 @@ public class R01HPortalPageEmbedServletFilterGuiceModule
 /////////////////////////////////////////////////////////////////////////////////////////
 	private final R01HPortalPageAppEmbedServletFilterConfig _filterConfig;
 	private final R01HPortalPageManagerConfig _pageManagerConfig;
-	private final R01HPortalPageProviderConfig _pageProviderConfig;
+	private final R01HPortalPageLoaderConfig _pageLoaderConfig;
 	private final R01HPortalPageAppEmbedMetricsConfig _metricsConfig;
 	private final Class<? extends R01HPortalPageEmbedServletFilterHelp> _filterHelpType;
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -48,8 +48,8 @@ public class R01HPortalPageEmbedServletFilterGuiceModule
 			  .toInstance(_filterConfig);
 		
 		// Portal page manager & page provider
-		binder.bind(R01HPortalPageProviderConfig.class)
-			  .toInstance(_pageProviderConfig);
+		binder.bind(R01HPortalPageLoaderConfig.class)
+			  .toInstance(_pageLoaderConfig);
 		binder.bind(R01HPortalPageManagerConfig.class)
 			  .toInstance(_pageManagerConfig);
 		

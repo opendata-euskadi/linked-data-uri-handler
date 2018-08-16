@@ -26,7 +26,7 @@
     <info organisation="com.ejie.r01.r01hp"
           module="r01hpPortalPageAppEmbedClasses"
           status="integration"
-          revision="1.1.0">
+          revision="1.4">
 	</info>
 
 	<!--
@@ -48,20 +48,6 @@
 		<!-- ============================================================================================================================== -->
 		<!-- R01FB                                                                                                                          -->
 		<!-- ============================================================================================================================== -->
-		<dependency org="com.ejie.r01.r01fb" name="r01fbBaseClasses" rev="latest.integration" 
-					conf="default->default;compile->compile;runtime->runtime">
-			<exclude org="commons-codec" name="commons-codec"/>
-		</dependency>
-					
-		<dependency org="com.ejie.r01.r01fb" name="r01fbPropertiesClasses" rev="latest.integration" 
-					conf="default->default;compile->compile;runtime->runtime"/>
-					
-		<dependency org="com.ejie.r01.r01fb" name="r01fbPropertiesGuiceClasses" rev="latest.integration" 
-					conf="default->default;compile->compile;runtime->runtime"/>
-		
-		<dependency org="com.ejie.r01.r01fb" name="r01fbFileStoreClasses" rev="latest.integration" 
-					conf="default->default;compile->compile;runtime->runtime"/>
-					
 		<dependency org="com.ejie.r01.r01fb" name="r01fbWebProfileClasses" rev="latest.integration" 
 					conf="default->default;compile->compile;runtime->runtime">
 			<!-- R01HPProxy does NOT use Jersey -->
@@ -72,6 +58,13 @@
 			
 			<!-- BEWARE!! the guice-servlet lib is located at each WAR's WEB-INF/lib folder -->
 			<exclude org="com.google.inject.extensions" name="guice-servlet"/>
+		</dependency>
+
+		<!-- ============================================================================================================================== -->
+		<!-- R01HP                                                                                                                          -->
+		<!-- ============================================================================================================================== -->
+		<dependency org="com.ejie.r01.r01hp" name="r01hpPortalPageLoaderClasses" rev="latest.integration" 
+					conf="default->default;compile->compile;runtime->runtime">
 		</dependency>
 
 		<!-- ============================================================================================================================== -->

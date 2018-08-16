@@ -37,7 +37,7 @@ see test.setup.read.me
 		Through the web server:
 			LOCAL: http://localhost/read/triplestore/    or     http://localhost/write/triplestore/
 			 DESA: http:/data.euskadi.ejiedes.eus/read/triplestore/     or   http:/data.euskadi.ejiedes.eus/write/triplestore/
-			 PROD: http:/data.euskadi.eus/read/triplestore/      or    http:/data.euskadi.eus/write/triplestore/
+			 PROD: http:/data.euskadi.eus/read/triplestore/    or    http:/data.euskadi.eus/write/triplestore/
 
 		Skipping the web server: request the app server
 			LOCAL: http://localhost:8080/r01hpLODWar/read/blazegraph/   or   http://localhost:8080/r01hpLODWar/write/blazegraph/

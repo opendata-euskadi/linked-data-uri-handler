@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <lod>
-	<!--
-		Data host domain:
-			data.euskadi.eus
-	-->
-	<dataSite>http://data.euskadi.localhost.eus:8081</dataSite>
+	<sites>
+		<idSite>http://id.euskadi.eus</idSite>		
+		<dataSite>http://data.euskadi.eus</dataSite>
+		<apiSite>http://api.euskadi.eus</apiSite>
+		<docSite>http://doc.euskadi.eus</docSite>
+		<webSite>http://www.euskadi.eus</webSite>
+	</sites>
 	
 	<!-- Where the LODWar is deployed -->
 	<lodWar>
@@ -43,7 +45,7 @@
 				<!-- write blazegraph -->
 				<host role="write">http://localhost:9999</host> 
 			</hosts>
-			<sparqlUrlPathPattern>/read/blazegraph/namespace/euskadi_db/sparql</sparqlUrlPathPattern>
+			<sparqlUrlPath>/read/blazegraph/namespace/euskadi_db/sparql</sparqlUrlPath>
 		</endPoint>		
 	</triplestore>	
 </lod>

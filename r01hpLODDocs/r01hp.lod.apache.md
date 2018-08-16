@@ -9,12 +9,7 @@ Pre-requisite:
 	# Rewrite
 	LoadModule rewrite_module modules/mod_rewrite.so
 ```
-Rewrite rules:
-```apache		
-	RewriteEngine On
-	RewriteRule ^/(id|eli|dataset|distribution|doc|data|def|sparql)/?(.*) /r01hpLODWar/$1/$2 [proxy]
-	RewriteRule ^/(read|write)/triplestore/(.*) /r01hpLODWar/$1/blazegraph/$2 [proxy]
-```
+
 ## Proxies:
 Pre-requisite:  
 [0] - Mod proxy
@@ -46,7 +41,44 @@ Pre-requisite:
 		worker.localhost_tomcat.host=localhost
 		worker.localhost_tomcat.port=8009
 ```
-Proxy:
+
+## Virtual Host:
 ```apache
-    JKMount  /r01hpProxyWar/* localhost_tomcat
+<VirtualHost *:80>
+    DocumentRoot "/home/linked_data"
+    ServerName localhost
+	 ServerAlias id.localhost
+	 ServerAlias data.localhost
+	 ServerAlias api.localhost
+	 ServerAlias doc.localhost
+    ErrorLog "logs/localhost-error.log"
+    CustomLog "logs/localhost-access.log" common
+	
+
+	 RewriteEngine On
+	 # elda static content
+	 RewriteRule ^(/elda-assets/.*)$ $1 [last]
+	 
+	 # triple store console
+	 RewriteRule ^/(read|write)/triplestore/(.*)$ /r01hpLODWar/$1/triplestore/$2 [proxy,last]
+	 
+	 # any other resource
+	 RewriteRule ^/((?!r01hpLODWar/).+)$ /r01hpLODWar/$1 [proxy,last,nosubreq]
+	 
+	 #LogLevel alert rewrite:trace3
+	
+	 # Proxies
+	 # =============================================================================
+	 # Send everything for context /examples to worker named [localhost_tomcat] (ajp13)
+	 # and defined at conf/pci/workers.properties
+	 JKMount  /r01hpLODWar/* localhost_tomcat
+</VirtualHost>
+
+
+Alias /elda-assets /home/linked_data/r01hpLODWebContent/elda-assets
+<Directory "/home/linked_data/r01hpLODWebContent/">
+    Options Indexes FollowSymLinks MultiViews
+    AllowOverride None
+    Require all granted
+</Directory>
 ```

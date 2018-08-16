@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import r01f.types.Path;
 import r01f.util.types.Strings;
-import r01hp.bootstrap.lod.R01HLODWarBootstrapGuiceModule;
+import r01hp.bootstrap.core.lod.R01HLODWarBootstrapGuiceModule;
 import r01hp.lod.config.R01HLODURIHandlerConfig;
 
 /**

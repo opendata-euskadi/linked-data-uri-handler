@@ -1,4 +1,4 @@
-Setup [OpenDataEuskadi] [LinkedOpenData] eclipse development environment
+Setup OpenDataEuskadi LinkedOpenData eclipse development environment
 ========================================================================
 
 ## [1]: Setup eclipse

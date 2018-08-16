@@ -5,7 +5,6 @@ import java.util.regex.Pattern;
 
 import javax.servlet.FilterConfig;
 
-import com.google.appengine.repackaged.com.google.common.collect.Lists;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
@@ -22,6 +21,7 @@ import r01f.locale.Language;
 import r01f.types.Path;
 import r01f.util.types.Strings;
 import r01f.util.types.collections.CollectionUtils;
+import r01f.util.types.collections.Lists;
 import r01f.util.types.locale.Languages;
 import r01f.xmlproperties.XMLPropertiesForAppComponent;
 import r01hp.portal.appembed.R01HPortalPageAppEmbedContextDefaults;
@@ -68,6 +68,10 @@ public class R01HPortalPageAppEmbedServletFilterConfig
 	public R01HPortalPageAppEmbedServletFilterConfig() {
 		this((XMLPropertiesForAppComponent)null);
 	}
+	public R01HPortalPageAppEmbedServletFilterConfig(final R01HPortalPageAppEmbedContextDefaults contextDefaults) {
+		this((XMLPropertiesForAppComponent)null,
+			 contextDefaults);
+	}
 	public R01HPortalPageAppEmbedServletFilterConfig(final Environment env,
 													 final boolean requestDebuggingGloballyEnabled,final Path requestDebugFolderPath,
 													 final Collection<Pattern> notPortalPageEmbeddedResources,
@@ -83,7 +87,7 @@ public class R01HPortalPageAppEmbedServletFilterConfig
 		_environment = null;
 		_requestDebuggingGloballyEnabled = false;
 		_requestDebugFolderPath = null;
-		
+
 		// [1] - The resources that will not be embedded into portal pages
 		String notEmbeddedResourcesStr = filterConfig.getInitParameter("r01hp.appembed.notEmbeddedResources");
 		if (Strings.isNOTNullOrEmpty(notEmbeddedResourcesStr)) {
@@ -98,7 +102,7 @@ public class R01HPortalPageAppEmbedServletFilterConfig
 		String defPortalStr = filterConfig.getInitParameter("r01hp.appembed.defaultPortal");
 		String defPageStr = filterConfig.getInitParameter("r01hp.appembed.defaultPage");
 		String defLangStr = filterConfig.getInitParameter("r01hp.appembed.defaultLang");
-		if (Strings.isNOTNullOrEmpty(defPortalStr) 
+		if (Strings.isNOTNullOrEmpty(defPortalStr)
 		 && Strings.isNOTNullOrEmpty(defPageStr)) {
 			log.warn("Default portal / page / lang to be used if none can be guess from the request overriden al web.xml (servlet filter init params): defaultPortal={}, defaultPage={}, defaultLang={}",
 					 defPortalStr,defPageStr,defLangStr);
@@ -112,13 +116,19 @@ public class R01HPortalPageAppEmbedServletFilterConfig
 		}
 	}
 	public R01HPortalPageAppEmbedServletFilterConfig(final XMLPropertiesForAppComponent props) {
+		this(props,
+			 null);
+	}
+	public R01HPortalPageAppEmbedServletFilterConfig(final XMLPropertiesForAppComponent props,
+												     final R01HPortalPageAppEmbedContextDefaults contextDefaults) {
 		if (props == null) {
 			_environment = Environment.forId("pro");
 			_requestDebuggingGloballyEnabled = false;
 			_requestDebugFolderPath = Path.from("/datos/r01hp/log");
 			_notPortalPageEmbeddedResources = null;
-			_contextDefaults = new R01HPortalPageAppEmbedContextDefaults(R01HPortalID.forId("web01"),R01HPortalPageID.forId("ejeduki"),Language.DEFAULT,
-															 			 "r01hpPortalCookie");
+			_contextDefaults = contextDefaults != null ? contextDefaults
+													   : new R01HPortalPageAppEmbedContextDefaults(R01HPortalID.forId("web01"),R01HPortalPageID.forId("ejeduki"),Language.DEFAULT,
+															 			 						   "r01hpPortalCookie");
 		}
 		else {
 	    	_environment = props.propertyAt("portalpageappembedfilter/@environment")
@@ -168,19 +178,19 @@ public class R01HPortalPageAppEmbedServletFilterConfig
 															 this.getContextDefaults());
 	}
 /////////////////////////////////////////////////////////////////////////////////////////
-//	
+//
 /////////////////////////////////////////////////////////////////////////////////////////
 	public R01HPortalPageAppEmbedServletFilterConfig cloneOverriddenWith(final R01HPortalPageAppEmbedServletFilterConfig other) {
 		// env
 		Environment environment = other.getEnvironment();
-		
+
 		// debug
 		boolean requestDebuggingGloballyEnabled = other.isRequestDebuggingGloballyEnabled();
 		Path requestDebugFolderPath = other.getRequestDebugFolderPath();
-		
+
 		// not portal embedded resources
 		Collection<Pattern> notPortalPageEmbeddedResources = null;
-		if (CollectionUtils.hasData(this.getNotPortalPageEmbeddedResources()) 
+		if (CollectionUtils.hasData(this.getNotPortalPageEmbeddedResources())
 		 && CollectionUtils.hasData(other.getNotPortalPageEmbeddedResources())) {
 			notPortalPageEmbeddedResources = Lists.newArrayList(Iterators.concat(this.getNotPortalPageEmbeddedResources().iterator(),
 																				 other.getNotPortalPageEmbeddedResources().iterator()));
@@ -189,10 +199,10 @@ public class R01HPortalPageAppEmbedServletFilterConfig
 		} else if (CollectionUtils.hasData(other.getNotPortalPageEmbeddedResources())) {
 			notPortalPageEmbeddedResources = other.getNotPortalPageEmbeddedResources();
 		}
-				
+
 		// context defaults
 		R01HPortalPageAppEmbedContextDefaults contextDefaults = null;
-		if (this.getContextDefaults() != null 
+		if (this.getContextDefaults() != null
 		 && other.getContextDefaults() != null)  {
 			contextDefaults = this.getContextDefaults()
 								  .cloneOverriddenWith(other.getContextDefaults());
@@ -201,8 +211,8 @@ public class R01HPortalPageAppEmbedServletFilterConfig
 		} else if (other.getContextDefaults() != null) {
 			contextDefaults = other.getContextDefaults();
 		}
-		
-		// return 
+
+		// return
 		return new R01HPortalPageAppEmbedServletFilterConfig(environment,
 															 requestDebuggingGloballyEnabled,requestDebugFolderPath,
 															 notPortalPageEmbeddedResources,

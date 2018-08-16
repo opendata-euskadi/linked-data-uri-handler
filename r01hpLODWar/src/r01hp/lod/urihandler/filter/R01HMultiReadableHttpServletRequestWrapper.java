@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.apache.commons.io.IOUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * A request wrapper that:
  * 		- Stores the POSTed BODY so it can be read multiple times 
@@ -28,6 +30,7 @@ import org.apache.commons.io.IOUtils;
  * (see http://natch3z.blogspot.com.es/2009/01/read-request-body-in-filter.html
  *  and ContentCachingRequestWrapper from Spring framework)
  */
+@Slf4j
   class R01HMultiReadableHttpServletRequestWrapper 
 extends HttpServletRequestWrapper {
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +40,7 @@ extends HttpServletRequestWrapper {
 	private static final String FORM_CONTENT_TYPE = "application/x-www-form-urlencoded";
 	private static final String METHOD_POST = "POST";
 	
-	private static final int MAX_POST_SIZE = 1024 * 4;
+	private static final int MAX_POST_SIZE = 10 * 10 * 1024;	// 10 Mb > Integer.MAX_VALUE;
 /////////////////////////////////////////////////////////////////////////////////////////
 //	FIELDS
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -168,9 +171,12 @@ extends HttpServletRequestWrapper {
 			// is called before getInputStream()
 			if (_cachedContent.size() == 0) {
 				try {
-					IOUtils.copyLarge(is,_cachedContent,
-									  0,						// initial offset
-									  MAX_POST_SIZE);			// max number of chars to be readed
+					long copied = IOUtils.copyLarge(is,_cachedContent,
+									  				0,						// initial offset
+									  				MAX_POST_SIZE);			// max number of chars to be readed
+					// maybe the max post size was reached and the post request fails with a BAD POST response
+					if (copied == MAX_POST_SIZE) log.warn("BEWARE! the maximum POST size ({}) has been reached... if that is the case POST requests might fail",
+														  MAX_POST_SIZE);
 				} catch(IOException ioEx) {
 					ioEx.printStackTrace(System.out);
 				}

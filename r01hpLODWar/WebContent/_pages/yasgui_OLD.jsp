@@ -1,7 +1,7 @@
 <%@page import="com.google.inject.Injector"%>
 <%@page import="r01hp.lod.config.R01HLODURIHandlerConfig"%>
 <%@page import="r01hp.lod.config.R01HLODTripleStoreConfig"%>
-<%@page import="r01hp.lod.urihandler.R01HLODURIType"%>
+<%@page import="r01hp.lod.urihandler.R01HLODResourceType"%>
 <%@page import="r01f.locale.Language"%>
 <%@page import="r01f.types.url.Url"%>
 <%@page import="r01f.types.url.UrlPath"%>
@@ -69,7 +69,7 @@
 	//			  The SPARQL endpoint url abobe is the INTERNAL one (the one at the BLAZEGRAPH server)
 	//					http://triple-store-host:9999/sparql/namespaces/{db}/sparql
 	String requestURI = request.getRequestURI();
-	UrlPath publicSparqlEndPointUrlPath = UrlPath.from(R01HLODURIType.SPARQL.getPathToken(),
+	UrlPath publicSparqlEndPointUrlPath = UrlPath.from(R01HLODResourceType.SPARQL.getPathToken(),
 													   "execute");	
 	
 %>

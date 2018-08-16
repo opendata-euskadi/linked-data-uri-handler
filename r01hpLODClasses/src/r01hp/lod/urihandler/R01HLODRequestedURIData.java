@@ -15,7 +15,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import r01f.debug.Debuggable;
-import r01f.locale.Language;
 import r01f.servlet.HttpServletRequestUtils;
 import r01f.types.url.Host;
 import r01f.types.url.Url;
@@ -40,8 +39,8 @@ public class R01HLODRequestedURIData
 /////////////////////////////////////////////////////////////////////////////////////////
 	@Getter private final Host _host;
 	@Getter private final int _port;
-	@Getter private final Language _language;
 	@Getter private final R01HLODURIType _uriType;
+	@Getter private final R01HLODResourceType _resourceType;
 	@Getter private final UrlPath _requestedResourceUrlPath;
 	@Getter private final UrlQueryString _requestQueryString;
 	@Getter private final String _requestedUrlAnchor;
@@ -53,31 +52,26 @@ public class R01HLODRequestedURIData
 								   final Url url,
 								   final String formEncodedQueryString,
 								   final R01HMIMEType... acceptedMimeTypes) {
+		// host & port
 		_host = url.getHost();
 		_port = url.getPort();
-		_language = null;
-		// uri type
-		_uriType = R01HLODURIType.of(url.getUrlPath());
-		// path
-		_requestedResourceUrlPath = UrlPath.from(url.getUrlPath());	// skip the first token (id, doc, data...)
-		// query string or port body > SPARQL queries
-		UrlQueryString urlQryString = url.getQueryString();
-		UrlQueryString formEncodedQryString = UrlQueryString.fromParamsString(formEncodedQueryString)
-															.withoutParamsMatching(IGNORED_QUERY_STRING_PARAMS_NAME_PATTERN);
-		if (urlQryString != null && formEncodedQryString != null) {
-			_requestQueryString = urlQryString.joinWith(formEncodedQryString);
-		} else if (urlQryString != null) {
-			_requestQueryString = urlQryString;
-		} else if (formEncodedQryString != null) {
-			_requestQueryString = formEncodedQryString;
-		} else {
-			_requestQueryString = null;
-		}
 		
+		// path
+		_requestedResourceUrlPath = url.getUrlPath();
+		
+		// query string or port body > SPARQL queries
+		UrlQueryString urlEncodedQueryString = url.getQueryString();
+		UrlQueryString formEncodedQryStr = _urlEncodedQueryString(formEncodedQueryString);
+		_requestQueryString = _urlQueryStringOf(urlEncodedQueryString,
+												formEncodedQryStr);
 		// anchor
 		_requestedUrlAnchor = url.getAnchor();
 		// accept
 		_acceptedMimes = Lists.newArrayList(acceptedMimeTypes);
+		
+		// uri type
+		_uriType = R01HLODURIType.of(_host);
+		_resourceType = R01HLODResourceType.of(_requestedResourceUrlPath);
 	}
 	public R01HLODRequestedURIData(final R01HLODURIHandlerConfig cfg,
 								   final HttpServletRequest req) throws IOException {
@@ -88,55 +82,23 @@ public class R01HLODRequestedURIData
 		// 				... the only solution is to use a ServletRequestWrapper
 		// 					(see http://natch3z.blogspot.com.es/2009/01/read-request-body-in-filter.html
 		// 					 and ContentCachingRequestWrapper from Spring framework)
-		Url requestedHost = Url.from(HttpServletRequestUtils.clienteRequestedHost(req));
-		_host = requestedHost.getHost();
-		_port = requestedHost.getPort();
-		_language = null;
-		// uri type
-		_uriType = R01HLODURIType.of(UrlPath.from(req.getServletPath()));
+		Host requestedHost = Host.of(HttpServletRequestUtils.clienteRequestedHost(req));
+		_host = Host.of(requestedHost.getId());		// strictly the host (ignore protocol)
+		_port = requestedHost.asUrl().getPort();
+		
 		// path
-		_requestedResourceUrlPath = UrlPath.from(req.getRequestURI())
+		_requestedResourceUrlPath = UrlPath.preservingTrailingSlash()		// BEWARE!!!
+										   .from(req.getRequestURI())
 								           .urlPathAfter(UrlPath.from(req.getContextPath()));	
+		// uri type
+		_uriType = R01HLODURIType.of(_host);
+		_resourceType = R01HLODResourceType.of(_requestedResourceUrlPath);
 
 		// query string or post body > SPARQL queries
-		String reqQueryStringStr = req.getQueryString();
-		UrlQueryString urlQryString = Strings.isNOTNullOrEmpty(reqQueryStringStr) ? UrlQueryString.fromParamsString(reqQueryStringStr)
-																								  .withoutParamsMatching(IGNORED_QUERY_STRING_PARAMS_NAME_PATTERN)
-																		  		  : null;
-		UrlQueryString formEncodedQryString = null;
-		String contentTypeHeader = req.getContentType();
-		if (_uriType == R01HLODURIType.SPARQL
-		 && req.getMethod().equalsIgnoreCase("POST")
-		 && contentTypeHeader.contains("application/x-www-form-urlencoded")) {		
-			// BEWARE! req.getReader() can try to read the body
-			// ... and the body cannot be read twice
-			// ... so the request MUST be wrapped
-			@SuppressWarnings("unchecked")
-			Map<String,String> params = Maps.transformValues(req.getParameterMap(),
-															 new Function<String[],String>() {
-																	@Override
-																	public String apply(final String[] paramValues) {
-																		if (paramValues.length > 1) throw new IllegalArgumentException("param with multiple values are NOT supported!");
-																		return paramValues != null ? paramValues[0] : "";
-																	}
-															 });
-			formEncodedQryString = CollectionUtils.hasData(params) ? new UrlQueryString(params)
-																				.withoutParamsMatching(IGNORED_QUERY_STRING_PARAMS_NAME_PATTERN)
-																   : null;
-//			_requestBody = StringPersistenceUtils.loadNotExceding(req.getReader(),
-//																  MAX_POST_DATA_CHARS);		// BEWARE! long post bodies
-		} 
-		if (urlQryString != null && urlQryString.hasParams()
-		 && formEncodedQryString != null && formEncodedQryString.hasParams()) {
-			_requestQueryString = urlQryString.joinWith(formEncodedQryString);
-		} else if (urlQryString != null && urlQryString.hasParams()) {
-			_requestQueryString = urlQryString;
-		} else if (formEncodedQryString != null && formEncodedQryString.hasParams()) {
-			_requestQueryString = formEncodedQryString;
-		} else {
-			_requestQueryString = null;
-		}
-					
+		UrlQueryString urlEncodedQueryString = _urlEncodedQueryString(req);
+		UrlQueryString formEncodedQryStr = _formEncodedQueryString(req);
+		_requestQueryString = _urlQueryStringOf(urlEncodedQueryString,
+												formEncodedQryStr);
 		// anchor
 		int anchorIndex = req.getRequestURI().indexOf('#');
 		_requestedUrlAnchor = anchorIndex > req.getRequestURI().length() 
@@ -172,12 +134,65 @@ public class R01HLODRequestedURIData
 /////////////////////////////////////////////////////////////////////////////////////////	
 	@Override
 	public CharSequence debugInfo() {
-		return Strings.customized("type={} host={} lang={} resource={}{}{} mimeTypes={}",
-				 				  _uriType,
-			     				  _host,_language,
+		return Strings.customized("type={} resourceType={} host={} resource={}{}{} mimeTypes={}",
+				 				  _uriType,_resourceType,
+			     				  _host,
 			     				  _requestedResourceUrlPath,
 			     				  _requestQueryString != null ? "?" +_requestQueryString : "",
 			     				  _requestedUrlAnchor != null ? "#" + _requestedUrlAnchor : "",
 			     				  _acceptedMimes);
+	}
+/////////////////////////////////////////////////////////////////////////////////////////
+//	QUERY STRING
+/////////////////////////////////////////////////////////////////////////////////////////
+	private UrlQueryString _urlQueryStringOf(final UrlQueryString urlEncodedQueryString,
+											 final UrlQueryString formEncodedQryString) {
+		UrlQueryString outUrlQueryString = null;
+		if (urlEncodedQueryString != null && urlEncodedQueryString.hasParams()
+		 && formEncodedQryString != null && formEncodedQryString.hasParams()) {
+			outUrlQueryString = urlEncodedQueryString.joinWith(formEncodedQryString);
+		} else if (urlEncodedQueryString != null && urlEncodedQueryString.hasParams()) {
+			outUrlQueryString = urlEncodedQueryString;
+		} else if (formEncodedQryString != null && formEncodedQryString.hasParams()) {
+			outUrlQueryString = formEncodedQryString;
+		}
+		return outUrlQueryString;
+	}
+	private UrlQueryString _urlEncodedQueryString(final HttpServletRequest req) {
+		return _urlEncodedQueryString(req.getQueryString());
+	}
+	private UrlQueryString _urlEncodedQueryString(final String str) {
+		UrlQueryString urlQryString = Strings.isNOTNullOrEmpty(str) ? UrlQueryString.fromParamsString(str)
+																					.withoutParamsMatching(IGNORED_QUERY_STRING_PARAMS_NAME_PATTERN)	// ignore params whose name starts with R01H
+																	: null;
+		return urlQryString;
+	}
+	private UrlQueryString _formEncodedQueryString(final HttpServletRequest req) {
+		UrlQueryString formEncodedQryString = null;
+		
+		String contentTypeHeader = req.getContentType();		
+		
+		// BEWARE! req.getReader() can try to read the body
+		// ... and the body cannot be read twice
+		// ... so the request MUST be wrapped
+		if (req.getMethod().equalsIgnoreCase("POST")
+		 && contentTypeHeader != null && contentTypeHeader.contains("application/x-www-form-urlencoded")) {
+			@SuppressWarnings("unchecked")
+			Map<String,String> params = Maps.transformValues(req.getParameterMap(),
+															 new Function<String[],String>() {
+																		@Override
+																		public String apply(final String[] paramValues) {
+																			if (CollectionUtils.isNullOrEmpty(paramValues)) return "";
+																			if (paramValues.length > 1) throw new IllegalArgumentException("param with multiple values are NOT supported: received: " + Lists.newArrayList(paramValues));
+																			return paramValues[0];
+																		}
+															 });
+			formEncodedQryString = CollectionUtils.hasData(params) ? new UrlQueryString(params)
+																				.withoutParamsMatching(IGNORED_QUERY_STRING_PARAMS_NAME_PATTERN)	// ignore params whose name starts with R01H
+																   : null;
+	//			_requestBody = StringPersistenceUtils.loadNotExceding(req.getReader(),
+	//																  MAX_POST_DATA_CHARS);		// BEWARE! long post bodies
+		}
+		return formEncodedQryString;
 	}
 }

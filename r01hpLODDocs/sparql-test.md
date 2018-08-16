@@ -13,17 +13,17 @@ Using this GUI anyone can issue [SPARQL] queries to the [triple-store]
 
 Test:
 
-a) using a web browser enter: http://data.euskadi.eus/sparql/
+a) using a web browser enter: ` http://api.euskadi.eus/sparql/ `
 
 b) Enter the following [SPARQL] query:
 
 ```sparql
-		DESCRIBE <http://data.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi>
+		DESCRIBE <http://id.euskadi.eus/public-sector/government/GovernmentalAdministrativeRegion/euskadi>
 ```
 
 The expected result is (Prefixes not shown for brevity):
 
-		<http://data.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi> <http://schema.org/mainEntityOfPage> <http://www.euskadi.eus> ;
+		<http://id.euskadi.eus/public-sector/government/GovernmentalAdministrativeRegion/euskadi> <http://schema.org/mainEntityOfPage> <http://www.euskadi.eus> ;
 			owl:sameAs <http://datos.gob.es/recurso/sector-publico/territorio/Autonomia/Pais-Vasco> .
 
 [SPARQL] endpoint as a service
@@ -35,24 +35,31 @@ Tes: Using an HTTP client GUI, for example POSTMAN or CURL
 
 If using GET http method
 
-	          Url: http://data.euskadi.eus/sparql/?query=DESCRIBE <http://data.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi>
+	          Url: http://api.euskadi.eus/sparql/?query=DESCRIBE <http://id.euskadi.eus/public-sector/government/GovernmentalAdministrativeRegion/euskadi>
 	       Method: GET
 	Accept header: Accept=rdf
 
-			 CURL: 	curl -X GET 'http://data.euskadi.eus/sparql/?query=DESCRIBE <http://data.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi>' \
+
+			 CURL: 
+```	
+			 curl -X GET 'http://api.euskadi.eus/sparql/?query=DESCRIBE <http://id.euskadi.eus/public-sector/government/GovernmentalAdministrativeRegion/euskadi>' \
 					     -H 'accept: application/rdf+xml'
+```
 		   Result: 	An RDF representation of the query result
 
 If using POST http method
 
-	          Url: http://data.euskadi.eus/sparql/?query=DESCRIBE <http://data.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi>
+	          Url: http://api.euskadi.eus/sparql/
 	       Method: POST
 	Accept header: Accept=rdf
 	         Body: form url encoded
-	         	   query=DESCRIBE <http://data.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi>			   
+	         	   query=DESCRIBE <http://id.euskadi.eus/public-sector/government/GovernmentalAdministrativeRegion/euskadi>			   
 
-			 CURL: 	curl -X POST http://data.euskadi.eus/sparql/ \
+			 CURL: 	
+```
+			 	curl -X POST http://api.euskadi.eus/sparql/ \
 					     -H 'accept: application/rdf+xml' \
 						 -H 'content-type: application/x-www-form-urlencoded' \
-						 -d query=DESCRIBE <http://data.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi>
+						 -d query=DESCRIBE <http://id.euskadi.eus/public-sector/government/GovernmentalAdministrativeRegion/euskadi>
+```
 		   Result: 	An RDF representation of the query result

@@ -13,15 +13,25 @@
 	<!-- 	the app will be embedded, the default page to use and how these pages are cached	-->
 	<!--    Multiple environments  can be configured in the same file						    -->
 	<portalServer>
+		<pageCopyToBeUsed>LIVE</pageCopyToBeUsed>	<!-- WORK/LIVE -->
 		<cacheConfig>
 			<initialCapacity>10</initialCapacity>
 			<maxSize>100</maxSize>
 			<checkInterval>20s</checkInterval>
 		</cacheConfig> 
-		<portalFiles>
+		<portalFiles loaderImpl="fileSystem">	<!-- loader=fileSystem/restService  -->
 			<!-- the filesystem path where the container pages can be found -->
-			<root>d:/temp_dev/r01hp/</root>
-			<pages>/html/pages/portal</pages>
+			<fileSystemLoader>
+				<workingCopyRoot>d:/temp_dev/r01hp/</workingCopyRoot>
+				<liveCopyRoot>d:/temp_dev/r01hp/</liveCopyRoot>
+				<pages>/html/pages/portal</pages>
+			</fileSystemLoader>
+			
+			<!-- the rest service endpoint that provides container pages -->
+			<restServiceLoader>
+				<endpointUrl></endpointUrl>
+				<endpointUrl></endpointUrl>
+			</restServiceLoader>
 			
 			<!-- the default portal/page/lang to be used if none can be guess from the request -->
 			<defaultPortal>web01</defaultPortal>

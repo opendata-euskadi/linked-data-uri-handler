@@ -2,11 +2,11 @@
 
 
 1.- Goto the console of the [writable Blazegraph]:
-		http://localhost/write/triplestore
+		http://api.localhost/write/triplestore/
 
 2.- Create the database
 
-		a) Goto [namespaces] tab: http://localhost/write/triplestore/#namespaces
+		a) Goto [namespaces] tab: http://api.localhost/write/triplestore/#namespaces
 		b) Fill the [create namespace] data:
 				Name: euskadi_db
 				Mode: quads    <--- very important
@@ -18,9 +18,9 @@
 # LOAD TEST DATA
 
 1.- Goto the console of the [writable Blazegraph]:
-		http://localhost/write/triplestore 		   
+		http://api.localhost/write/triplestore 		   
 
-2.- Goto [UPDATE]: http://localhost/write/triplestore/#update
+2.- Goto [UPDATE]: http://api.localhost/write/triplestore/#update
 
 3.- Using the [file browse] utility upload all files at [test-data] folder:
     (the data format is auto-detected)
@@ -31,11 +31,15 @@
 
 # TEST
 a) goto the [triple store] sparql endpoint
-		http://localhost/write/triplestore/#query
+		http://api.localhost/write/triplestore/#query
 
 b) Paste the query and exec:
 ```sparql
-	DESCRIBE <http://data.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi>
+	DESCRIBE <http://id.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi>
 ```
 
 ... should return the previously inserted data for [euskadi] resource				
+
+subject	predicate	object	context
+<http://id.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi>	schema:mainEntityOfPage	<http://www.euskadi.eus>	
+<http://id.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi>	owl:sameAs	<http://datos.gob.es/recurso/sector-publico/territorio/Autonomia/Pais-Vasco>	

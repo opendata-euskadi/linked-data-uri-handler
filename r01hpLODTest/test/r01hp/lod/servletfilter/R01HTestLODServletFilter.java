@@ -17,7 +17,7 @@ import r01f.types.url.Host;
 import r01f.types.url.Url;
 import r01f.types.url.UrlPath;
 import r01f.util.types.collections.CollectionUtils;
-import r01hp.lod.urihandler.R01HLODURIType;
+import r01hp.lod.config.R01HLODURIHandlerConfig;
 import r01hp.lod.urihandler.R01HMIMEType;
 
 @Slf4j
@@ -32,44 +32,45 @@ public class R01HTestLODServletFilter {
 		log.info("RESOURCE URIs");
 		log.info("=====================================================================================");
 
-		Host host = Host.of("http://localhost:8080");		// local tomcat
-		UrlPath warContext = UrlPath.from("r01hpLODWar");	// lod war
-//		UrlPath resourceUrlPath = UrlPath.from("/sector/domain/class/theId");
-		UrlPath resourceUrlPath = UrlPath.from("/sector_publico/legislacion-justicia/fundacion/fundacion-kalitatea-fundazioa");
+		Host idSite = Host.of("http://id.localhost");		// local apache server
+		Host dataSite = Host.of("http://data.localhost");		
+		Host docSite = Host.of("http://doc.localhost");
+		UrlPath warContext = UrlPath.from(R01HLODURIHandlerConfig.LOD_WAR_NAME);	// lod war
+		UrlPath resourceUrlPath = UrlPath.from("/sector/domain/class/theId");
+		Url uri = Url.from(idSite,
+						   resourceUrlPath);
 		
 		
-		log.info("[1] - Resource: /id/{resource} with mime type=RDF...........");
-		Url url1 = Url.from(host,
-					        warContext.joinedWith(R01HLODURIType.ID.getPathToken())
-					        		  .joinedWith(resourceUrlPath));
-		HttpResponse response1 = _doHttpRequest(url1,
+		log.info("[1] - URI: {} with mime type=RDF...........",
+				 uri);
+		HttpResponse response1 = _doHttpRequest(uri,
 										     	R01HMIMEType.RDFXML);
 		HttpResponseCode respCode1 = HttpResponseCode.of(response1.getStatusLine().getStatusCode());
-		UrlPath redirUrlPath1 = CollectionUtils.hasData(response1.getHeaders("Location")) 
-										? UrlPath.from(response1.getHeaders("Location")[0].getValue())
+		Url redirUrl1 = CollectionUtils.hasData(response1.getHeaders("Location")) 
+										? Url.from(response1.getHeaders("Location")[0].getValue())
 										: null;
 		log.info("\tresponse code={} / redirect location={}",
-				 respCode1,redirUrlPath1);
+				 respCode1,redirUrl1);
+		Assert.assertTrue(redirUrl1 != null);
 		Assert.assertTrue(respCode1.is300());
-		Assert.assertTrue(redirUrlPath1.is(R01HLODURIType.DATA.getPathToken()
-												  		 .joinedWith(resourceUrlPath)));
+		Assert.assertTrue(redirUrl1.is(Url.from(dataSite,
+												resourceUrlPath)));
 		
 		
-		log.info("[2] - Resource: /id/{resource} with mime type=HTML...........");
-		Url url2 = Url.from(host,
-					        warContext.joinedWith(R01HLODURIType.ID.getPathToken())
-					        		  .joinedWith(resourceUrlPath));
-		HttpResponse response2 = _doHttpRequest(url2,
+		log.info("[2] - URI: {} with mime type=HTML...........",
+				 uri);
+		HttpResponse response2 = _doHttpRequest(uri,
 										     	R01HMIMEType.HTML);
 		HttpResponseCode respCode2 = HttpResponseCode.of(response2.getStatusLine().getStatusCode());
-		UrlPath redirUrlPath2 = CollectionUtils.hasData(response2.getHeaders("Location")) 
-										? UrlPath.from(response2.getHeaders("Location")[0].getValue())
+		Url redirUrl2 = CollectionUtils.hasData(response2.getHeaders("Location")) 
+										? Url.from(response2.getHeaders("Location")[0].getValue())
 										: null;
 		log.info("\tresponse code={} / redirect location={}",
-				 respCode2,redirUrlPath2);
+				 respCode2,redirUrl2);
+		Assert.assertTrue(redirUrl2 != null);
 		Assert.assertTrue(respCode2.is300());
-		Assert.assertTrue(redirUrlPath2.is(R01HLODURIType.DOC.getPathToken()
-												  		 .joinedWith(resourceUrlPath)));
+		Assert.assertTrue(redirUrl2.is(Url.from(docSite,
+												resourceUrlPath)));
 	}
 /////////////////////////////////////////////////////////////////////////////////////////
 //	

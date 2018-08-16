@@ -5,14 +5,14 @@ URI policy test
 Euskadi.eus has normalized several URI types:
 ### Spanish NTI-like URIs
 (NTI stands for "Norma tablecnica de Interoperabilidad = Interop Technical Norm")  
-`http://data.euskadi.eus/id/{Sector}/{Domain}/{ClassName}/{Identifier}`
+`http://id.euskadi.eus/{Sector}/{Domain}/{ClassName}/{Identifier}`
 
 	  			{Sector}: one of the sectors provided by the NTI (e.g. environment),
 	  			{Domain}: the realm to which the resource belongs, defined by Open Data Euskadi (e.g. air-quality)
 	  			{ClassName}: the name of the class to which this resource belongs
 	  			{Identifier}: a unique identifier, generated from the original data
 
-	  		Example: http://data.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi
+	  		Example: http://id.euskadi.eus/public-sector/government/GovernmentalAdministrativeRegion/euskadi
 
 ### ELI: European Legislation Identifier   
 Legislation resources can roughly be defined in three levels
@@ -31,18 +31,18 @@ where:
 	{language}: i.e. "eus" for basque, "spa" for spanish
 
 so URIs can be like:
-- Legislation resouce: `http://data.euskadi.eus/eli/{jurisdiction}/{type}/{year}/{month}/{day}/{naturalidentifier}`
-  - Version: `http://data.euskadi.eus/eli/{jurisdiction}/{type}/{year}/{month}/{day}/{naturalidentifier}/{version}/{pointintime}/{language}/`
-    - Format: `http://data.euskadi.eus/eli/{jurisdiction}/{type}/{year}/{month}/{day}/{naturalidentifier}/{version}/{pointintime}/{language}/{format}`
+- Legislation resouce: `http://id.euskadi.eus/eli/{jurisdiction}/{type}/{year}/{month}/{day}/{naturalidentifier}`
+  - Version: `http://id.euskadi.eus/eli/{jurisdiction}/{type}/{year}/{month}/{day}/{naturalidentifier}/{version}/{pointintime}/{language}/`
+    - Format: `http://id.euskadi.eus/eli/{jurisdiction}/{type}/{year}/{month}/{day}/{naturalidentifier}/{version}/{pointintime}/{language}/{format}`
 
 ### DataSet:
-	http://data.euskadi.eus/dataset/{NamedGraph}
+	http://id.euskadi.eus/dataset/{NamedGraph}
 
 ### DataSet distribution
-	http://data.euskadi.eus/distribution/{NamedGraph}/[lang]/format
+	http://id.euskadi.eus/distribution/{NamedGraph}/[lang]/format
 
 ### Named graph
-	http://data.euskadi.eus/graph/{NamedGraph}
+	http://id.euskadi.eus/graph/{NamedGraph}
 
 
 ## Resource URIs and Representation URLs			
@@ -79,76 +79,89 @@ The URI is handled differently whether the requested MIME is HTML or RDF (or tur
 
 - If the requested MIME is RDF, the URI is for a [triple-store] data so a CLIENT REDIR to /data/{resource} is issued
 
-            ^
-            |                                                      +------------------+
-            |                                                      |  /id/{resource}  |
-        Resource                                                   +--------+---------+
-          URIs                                                              |
-            |                     Is main entity                            |
-            |                     of page?------------MIME=HTML-------------+-------MIME=RDF--------+
-            |                            |                                                          |
-            |              +-----NO------+-----YES-----+                                            |
-            |              |                           |                                            |
-            |              |                           |                                            |
-            |              |                           |                                            |
-        +---------------------------------------[***** CLIENT REDIR ****]----------------------------------------+
-            |              |                           |                                           |
-            |   +----------v---------+       +---------v----------+                     +----------v----------+
-            |   | /doc/id/{resource} |       |     {web page}     |                     | /data/id/{resource} |
-            |   +--------+-----------+       +---------+----------+                     +----------+----------+
-            |            |                             |                                           |
-      Representation     |                             |                                      /id/{resource}    
-          URLs           |                             |                                           |
-            |   +--------v---------+         +---------v--------+                         +--------v--------+
-            |   |                  |         |                  |                         |                 |
-            |   |      ELDA        |         |        Web       |                         |   Triple-Store  |
-            |   |                  |         |                  |                         |                 |
-            v   +------------------+         +------------------+                         +--------^--------+
-                         |                                                                         |
-                         +--------------------------  /id/{resource}  -----------------------------+
+```
+                    ^                                                                                                                   
+                    |                                                  +--------------------------+                                     
+                    +                                                  | http://idsite/{resource} |                                     
+                Resource                                               +-------------+------------+                                     
+                  URIs                                                               |                                                  
+                    +                             Is main entity                     |                                                  
+                    |                           +---+ of page? +-----+MIME=HTML+-----+-----+MIME=RDF+--------+                          
+                    |                           |                                                            |                          
+                    |              +------------+-------------+                                              |                          
+                    |              |                          |                                              |                          
+                    |              |                          |                                              |                          
+                    |              |                          |                                              |                          
+                +---------------------------------------------------+[***** CLIENT REDIR ****]+----------------------------------+      
+                    |              |                          |                                              |                          
+                                   |                          |                                              |                          
+                    |   +----------v--------------+ +---------v---------------+                 +------------v-------------+            
+                    |   |http://docsite/{resource}| |http://website/{resource}|                 |http://datasite/{resource}|            
+                    +   +----------+--------------+ +---------+---------------+                 +------------+-------------+            
+                                   |                          |                                              |                          
+              Representation       |                          |                                              |                          
+                  URLs             |                          |                                              |                          
+                    +       +------v-------+        +---------v--------+                            +--------v--------+                 
+                    |       |              |        |                  |                            |                 |                 
+                    |       |     ELDA     |        |        Web       |                            |   Triple+Store  |                 
+                    |       |              |        |                  |                            |                 |                 
+                    v       +--------------+        +------------------+                            +-----------------+                 
+
+```
 
 ## Testing:
 Content negotiation:
 * [CASE 1]
 
-				  URL: http://data.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi
+				  URL: http://id.euskadi.eus/public-sector/government/GovernmentalAdministrativeRegion/euskadi
 		Accept header: html
 	  Expected result: since the [resource] has an associated [web page] (www.euskadi.eus), a CLIENT-REDIR
 	  				   to www.euskadi.eus is issued
 
-	  			 CURL: 	curl -X GET http://data.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi \
-  							 -H 'accept: application/xhtml+xml' \
-
-			   Result: 	euskadi.eus web page
+	  			 CURL:
+	  			   ``` 	
+	  			 	curl -X GET http://id.euskadi.eus/public-sector/government/GovernmentalAdministrativeRegion/euskadi \
+  						   -H 'accept: application/xhtml+xml' \
+					```
+			     Result: 	euskadi.eus web page
 * [CASE 2]
 
-				  URL: http://data.euskadi.eus/eli/es-pv/l/1979/03/20/(0)/dof
+				  URL: http://id.euskadi.eus/eli/es-pv/l/1979/03/20/(0)/dof
 		Accept header: html
 	  Expected result: since the [resource] DOES NOT hava an associated [web page] the only option is to render
 	  				   the [triple-store] data as HTML using [ELDA] so a CLIENT-REDIR to
-	  				   http://data.euskadi.eus/do/eli/es-pv/l/1979/03/20/(0)/dof is issued
+	  				   http://doc.euskadi.eus/eli/es-pv/l/1979/03/20/(0)/dof is issued
 
-				 CURL: 	curl -X GET http://data.euskadi.eus/eli/es-pv/l/1979/03/20/(0)/dof \
-  						     -H 'accept: application/xhtml+xml'
+				 CURL:
+				 	``` 	
+				 	curl -X GET http://id.euskadi.eus/eli/es-pv/l/1979/03/20/(0)/dof \
+  						  -H 'accept: application/xhtml+xml'
+  					```
 			   Result: An [ELDA]-generated web page for the [resource]
 
 * [CASE 3]
 
-				  URL: http://data.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi
+				  URL: http://id.euskadi.eus/public-sector/government/GovernmentalAdministrativeRegion/euskadi
 		Accept header: rdf
-	  Expected result: a CLIENT-REDIR to the [triple-store] date is issued: http://localhost/data/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi
+	  Expected result: a CLIENT-REDIR to the [triple-store] data is issued: http://data.euskadi.eus/public-sector/government/GovernmentalAdministrativeRegion/euskadi
 	  				   ... and the RDF data is returned
 
-				 CURL: 	curl -X GET http://data.euskadi.eus/id/public-sector/government/GovernmentalAdministrativeRegion/euskadi \
-  							 -H 'accept: application/rdf+xml'
+				 CURL:
+				 ```
+				 	curl -L GET http://id.euskadi.eus/public-sector/government/GovernmentalAdministrativeRegion/euskadi \
+  						  -H 'accept: application/rdf+xml'
+  				  ```
 			   Result: 	The [resource] in RDF format
 * [CASE 4]
 
-				URL: http://data.euskadi.eus/eli/es-pv/l/1979/03/20/(0)/dof
+				URL: http://id.euskadi.eus/eli/es-pv/l/1979/03/20/(0)/dof
 		Accept header: rdf
-	  Expected result: a CLIENT-REDIR to the [triple-store] date is issued: http://localhost/eli/es-pv/l/1979/03/20/(0)/dof
+	  Expected result: a CLIENT-REDIR to the [triple-store] date is issued: http://data.euskadi.eus/eli/es-pv/l/1979/03/20/(0)/dof
 	  				   ... and the RDF data is returned
 
-				 CURL: 	curl -X GET http://data.euskadi.eus/eli/es-pv/l/1979/03/20/(0)/dof \
-  							 -H 'accept: application/rdf+xml'
+				 CURL:
+				 	``` 	
+				 	curl -L GET http://id.euskadi.eus/eli/es-pv/l/1979/03/20/(0)/dof \
+  						  -H 'accept: application/rdf+xml'
+  					```
 			   Result: 	The [resource] in RDF format

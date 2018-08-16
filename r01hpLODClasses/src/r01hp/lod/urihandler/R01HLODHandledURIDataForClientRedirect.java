@@ -18,20 +18,28 @@ public class R01HLODHandledURIDataForClientRedirect
 /////////////////////////////////////////////////////////////////////////////////////////
 //	CONSTRUCTOR
 /////////////////////////////////////////////////////////////////////////////////////////
-	public R01HLODHandledURIDataForClientRedirect(final UrlPath urlPath) {
-		this(urlPath,
+	public R01HLODHandledURIDataForClientRedirect(final Host site,
+												  final UrlPath urlPath) {
+		this(site,
+			 urlPath,
 			 null,		// query string
 			 null);		// anchor
 	}
-	public R01HLODHandledURIDataForClientRedirect(final UrlPath urlPath,final UrlQueryString urlQueryString) {
-		this(urlPath,
+	public R01HLODHandledURIDataForClientRedirect(final Host site,
+												  final UrlPath urlPath,final UrlQueryString urlQueryString) {
+		this(site,
+			 urlPath,
 			 urlQueryString,
 			 null);		// anchor
 	}
-	public R01HLODHandledURIDataForClientRedirect(final UrlPath urlPath,final UrlQueryString urlQueryString,final String urlAnchor) {
-		this(Url.from(urlPath,urlQueryString,urlAnchor));
+	public R01HLODHandledURIDataForClientRedirect(final Host site,
+												  final UrlPath urlPath,final UrlQueryString urlQueryString,final String urlAnchor) {
+		this(Url.from(site,
+					  urlPath,
+					  urlQueryString,urlAnchor));
 	}
-	public R01HLODHandledURIDataForClientRedirect(final Host host,final UrlPath urlPath,final UrlQueryString urlQueryString,final String urlAnchor) {
+	public R01HLODHandledURIDataForClientRedirect(final Host site,
+														final Host host,final UrlPath urlPath,final UrlQueryString urlQueryString,final String urlAnchor) {
 		this(Url.from(host,
 					   urlPath,urlQueryString,urlAnchor));
 	}

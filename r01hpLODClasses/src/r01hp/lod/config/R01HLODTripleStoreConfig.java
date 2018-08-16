@@ -40,7 +40,7 @@ public class R01HLODTripleStoreConfig
 	@Getter private final TimeLapse _proxyTimeout;
 	@Getter private final boolean _debugProxyEnabled;
 	@Getter private final Collection<R01HLODTripleStoreHostWithRole> _internalTripleStoreServerHosts;
-	@Getter private final String _internalSPARQLUrlPathPattern;
+	@Getter private final UrlPath _internalSPARQLEndPointUrlPath;
 /////////////////////////////////////////////////////////////////////////////////////////
 //	SPARQL ENDPOINT URL
 //	Beware that there're TWO sparql endpoint urls:
@@ -75,9 +75,6 @@ public class R01HLODTripleStoreConfig
 		return new Url(publicHost,
 					   this.getPublicSPARQLEndPointUrlPath());
 	}
-	public UrlPath getInternalSPARQLEndPointUrlPath() {
-		return UrlPath.from(_internalSPARQLUrlPathPattern);
-	}
 /////////////////////////////////////////////////////////////////////////////////////////
 //	
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -93,7 +90,7 @@ public class R01HLODTripleStoreConfig
 /////////////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public CharSequence debugInfo() {
-		return Strings.customized("TripleStore sparql end-point internal host={} url path pattern={}",
+		return Strings.customized("TripleStore end-point internal host={} url path pattern={}",
 								  FluentIterable.from(_internalTripleStoreServerHosts)
 								  				.transform(new Function<R01HLODTripleStoreHostWithRole,String>() {
 																	@Override
@@ -102,7 +99,7 @@ public class R01HLODTripleStoreConfig
 																	}
 								  						   })
 								  				.toList(),
-								  _internalSPARQLUrlPathPattern);
+								  _internalSPARQLEndPointUrlPath);
 	}
 /////////////////////////////////////////////////////////////////////////////////////////
 //	PROXY
@@ -113,7 +110,7 @@ public class R01HLODTripleStoreConfig
 		//		- WebLogicHost = host
 		//		- WebLogicPort = port
 		//		- ConnectTimeoutSecs = timeout
-		//		- PathTrim = r01hpLODWar
+		//		- PathTrim = read | write
 		R01HLODTripleStoreHostWithRole targerServerHostWithRole = FluentIterable.from(uriHandlerConfig.getTripleStoreConfig()
 																							  .getInternalTripleStoreServerHosts())
 																		 .firstMatch(R01HLODTripleStoreHostWithRole.matcherFor(role))
@@ -127,11 +124,10 @@ public class R01HLODTripleStoreConfig
 		if (uriHandlerConfig.getTripleStoreConfig().getProxyTimeout() != null) {
 			outWLSParams.put("ConnectTimeoutSecs",Long.toString(uriHandlerConfig.getTripleStoreConfig().getProxyTimeout().asMilis() / 1000));
 		}
-//		outWLSParams.put("PathTrim","r01hpLODWar");
 		if (role.is(R01HLODTripleStoreHostWithRole.READ_ROLE)) {
-			outWLSParams.put("PathTrim","/r01hpLODWar/read");
+			outWLSParams.put("PathTrim",READ_TRIPLESTORE_PROXY_SERVLET_PATHTRIM);
 		} else if (role.is(R01HLODTripleStoreHostWithRole.WRITE_ROLE)) {
-			outWLSParams.put("PathTrim","/r01hpLODWar/write");
+			outWLSParams.put("PathTrim",WRITE_TRIPLESTORE_PROXY_SERVLET_PATHTRIM);
 		}
 		
 		// debug
@@ -145,7 +141,7 @@ public class R01HLODTripleStoreConfig
 		//		- WebLogicCluster = host1:port1|host2:port2
 		//		- WebLogicPort = port
 		//		- ConnectTimeoutSecs = timeout
-		//		- PathTrim = r01hpLODWar
+		//		- PathTrim = read | write
 		Collection<R01HLODTripleStoreHostWithRole> targerServerHostsWithRole = FluentIterable.from(uriHandlerConfig.getTripleStoreConfig()
 																							  .getInternalTripleStoreServerHosts())
 																					 .filter(R01HLODTripleStoreHostWithRole.matcherFor(role))
@@ -174,11 +170,10 @@ public class R01HLODTripleStoreConfig
 		if (uriHandlerConfig.getTripleStoreConfig().getProxyTimeout() != null) {
 			outWLSParams.put("ConnectTimeoutSecs",Long.toString(uriHandlerConfig.getTripleStoreConfig().getProxyTimeout().asMilis() / 1000));
 		}
-//		outWLSParams.put("PathTrim","r01hpLODWar");
 		if (role.is(R01HLODTripleStoreHostWithRole.READ_ROLE)) {
-			outWLSParams.put("PathTrim","/r01hpLODWar/read");
+			outWLSParams.put("PathTrim",READ_TRIPLESTORE_PROXY_SERVLET_PATHTRIM);
 		} else if (role.is(R01HLODTripleStoreHostWithRole.WRITE_ROLE)) {
-			outWLSParams.put("PathTrim","/r01hpLODWar/write");
+			outWLSParams.put("PathTrim",WRITE_TRIPLESTORE_PROXY_SERVLET_PATHTRIM);
 		}
 		
 		// debug
@@ -202,7 +197,7 @@ public class R01HLODTripleStoreConfig
 		//		- TargetAppServerHost = host1:port1|host2:port2
 		//		- TargetAppServerPort = port
 		//		- ConnectTimeoutSecs = timeout
-		//		- PathTrim = r01hpLODWar
+		//		- PathTrim = read | write
 		R01HLODTripleStoreHostWithRole targerServerHostWithRole = FluentIterable.from(uriHandlerConfig.getTripleStoreConfig()
 																							  .getInternalTripleStoreServerHosts())
 																		 .firstMatch(R01HLODTripleStoreHostWithRole.matcherFor(role))
@@ -216,15 +211,22 @@ public class R01HLODTripleStoreConfig
 							targerServerHost.getId());
 		outProxyParams.put(HttpProxyServletConfig.INIT_PARAM_NAME_FOR_TARGET_APP_SERVER_HOST_PORT,
 						   Integer.toString(targerServerHost.asUrl().getPort()));
-		outProxyParams.put(HttpProxyServletConfig.INIT_PARAM_NAME_FOR_PATH_TRIM,
-						   "r01hpLODWar");
 		
 		if (role.is(R01HLODTripleStoreHostWithRole.READ_ROLE)) {
-			outProxyParams.put("PathTrim","read");
+			outProxyParams.put(HttpProxyServletConfig.INIT_PARAM_NAME_FOR_PATH_TRIM,
+							   READ_TRIPLESTORE_PROXY_SERVLET_PATHTRIM);
 		} else if (role.is(R01HLODTripleStoreHostWithRole.WRITE_ROLE)) {
-			outProxyParams.put("PathTrim","write");
+			outProxyParams.put(HttpProxyServletConfig.INIT_PARAM_NAME_FOR_PATH_TRIM,
+							   WRITE_TRIPLESTORE_PROXY_SERVLET_PATHTRIM);
 		}
-		
+		// allow big post data
+		outProxyParams.put(HttpProxyServletConfig.INIT_PARAM_NAME_FOR_MAX_FILE_UPLOAD_SIZE,
+						   Integer.toString(Integer.MAX_VALUE));
 		return outProxyParams;
 	}
+/////////////////////////////////////////////////////////////////////////////////////////
+//	
+/////////////////////////////////////////////////////////////////////////////////////////
+	private static final String READ_TRIPLESTORE_PROXY_SERVLET_PATHTRIM =  "/" + R01HLODURIHandlerConfig.LOD_WAR_NAME + "/read";
+	private static final String WRITE_TRIPLESTORE_PROXY_SERVLET_PATHTRIM =  "/" + R01HLODURIHandlerConfig.LOD_WAR_NAME + "/write";
 }

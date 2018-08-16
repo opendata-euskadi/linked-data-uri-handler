@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import r01hp.portal.appembed.config.R01HPortalPageManagerConfig;
+import r01hp.portal.common.R01HPortalPageCopy;
 import r01hp.portal.common.R01HPortalOIDs.R01HPortalAndPage;
 import r01hp.portal.common.R01HPortalOIDs.R01HPortalID;
 import r01hp.portal.common.R01HPortalOIDs.R01HPortalPageID;
@@ -29,7 +30,7 @@ public class R01HPortalPageManager {
 //  FIELDS
 /////////////////////////////////////////////////////////////////////////////////////////
 	@Getter private final R01HPortalPageManagerConfig _config;
-	@Getter private final R01HPortalPageProviderWrapper _portalContainerPagesProvider;
+	@Getter private final R01HPortalPageProvider _portalContainerPagesProvider;
 	
     		private final LoadingCache<R01HPortalAndPage,R01HPortalContainerPage> _cache;
 
@@ -40,8 +41,7 @@ public class R01HPortalPageManager {
     public R01HPortalPageManager(final R01HPortalPageManagerConfig config,
     							 final R01HPortalPageProvider pageProvider) {
        _config = config;
-       _portalContainerPagesProvider = new R01HPortalPageProviderWrapper(pageProvider,
-    		   															 config.getLastResourceContainerPageFileIfRequestedNotFound());
+       _portalContainerPagesProvider = pageProvider;
        log.warn("Creating a portal page cache with initial size={} and max size={}. The elements at the cache will be checked every {}",
     		   	config.getInitialCapacity(),config.getMaxSize(),
     		   	config.getAppContainterPageModifiedCheckInterval());
@@ -59,8 +59,8 @@ public class R01HPortalPageManager {
         					.build(new CacheLoader<R01HPortalAndPage,R01HPortalContainerPage>() {
 											@Override
 											public R01HPortalContainerPage load(final R01HPortalAndPage portalAndPage) throws Exception {
-												return _portalContainerPagesProvider.loadFor(portalAndPage.getPortalId(),
-																						 	 portalAndPage.getPageId());
+												return _portalContainerPagesProvider.provideFor(portalAndPage.getPortalId(),portalAndPage.getPageId(),
+																								_config.getCopy());
 											}
         					 		});
     }
@@ -96,7 +96,8 @@ public class R01HPortalPageManager {
         			 System.currentTimeMillis() - cachedElement.getLastCheckTimeStamp(),
         			 _config.getAppContainerPageModifiedCheckIntervalMilis());
         	// try to load the app container page again...
-        	R01HPortalContainerPage loadedPage = _portalContainerPagesProvider.loadFor(portalId,pageId);
+        	R01HPortalContainerPage loadedPage = _portalContainerPagesProvider.provideFor(portalId,pageId,
+        																				  _config.getCopy());
         	
         	// maybe the page was deleted
         	if (loadedPage.isContainsLastResourceContainerPageHtml() && !cachedElement.isContainsLastResourceContainerPageHtml()) {

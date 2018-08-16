@@ -20,6 +20,7 @@ import r01f.util.types.Strings;
 import r01f.util.types.locale.Languages;
 import r01hp.portal.common.R01HPortalOIDs.R01HPortalID;
 import r01hp.portal.common.R01HPortalOIDs.R01HPortalPageID;
+import r01hp.portal.common.R01HPortalPageCopy;
 import r01hp.util.parser.R01HToken;
 import r01hp.util.parser.R01HTokenizerObservable;
 import rx.Observable;
@@ -39,6 +40,7 @@ implements Debuggable {
 /////////////////////////////////////////////////////////////////////////////////////////
 	@Getter	protected final R01HPortalID _portalId;
 	@Getter protected final R01HPortalPageID _pageId;
+	@Getter protected final R01HPortalPageCopy _copy;
 	
 	// cache info
 	@Getter 		protected final boolean _containsLastResourceContainerPageHtml;
@@ -54,24 +56,29 @@ implements Debuggable {
 //  CONSTRUCTOR
 /////////////////////////////////////////////////////////////////////////////////////////
 	public R01HPortalContainerPage(final R01HPortalID portalId,final R01HPortalPageID pageId,
+								   final R01HPortalPageCopy copy,
 								   final InputStream is,
 								   final long lastModifiedTimeStamp,
 								   final boolean containsLastResourceContainerPageHtml) {
 		this(portalId,pageId,
+			 copy,
 			 is,Charset.defaultCharset(),
 			 lastModifiedTimeStamp,
 			 containsLastResourceContainerPageHtml);
 	}
 	public R01HPortalContainerPage(final R01HPortalID portalId,final R01HPortalPageID pageId,
+								   final R01HPortalPageCopy copy,
 								   final InputStream is,final Charset isCharset,
 								   final long lastModifiedTimeStamp,
 								   final boolean containsLastResourceContainerPageHtml) {
 		this(portalId,pageId,
+			 copy,
 			 new CharacterStreamSource(is,isCharset),
 			 lastModifiedTimeStamp,
 			 containsLastResourceContainerPageHtml);
 	}
 	public R01HPortalContainerPage(final R01HPortalID portalId,final R01HPortalPageID pageId,
+								   final R01HPortalPageCopy copy,
 								   final CharacterStreamSource appContainerCharReader,
 								   final long lastModifiedTimeStamp,
 								   final boolean containsLastResourceContainerPageHtml) {
@@ -207,6 +214,7 @@ implements Debuggable {
 		// set parsed content
 		_portalId = portalId;
 		_pageId = pageId;
+		_copy = copy;
 		
 		_containsLastResourceContainerPageHtml = containsLastResourceContainerPageHtml;
 		_lastModifiedTimeStamp = lastModifiedTimeStamp;
@@ -359,15 +367,15 @@ implements Debuggable {
 //  DEBUG
 /////////////////////////////////////////////////////////////////////////////////////////
 	public String miniDebugInfo() {
-		return Strings.customized("portal-page={}-{} lastResource={} lastModified={} lastCheck={} hitCount={}",
-								  _portalId,_pageId,
+		return Strings.customized("portal-page={}-{} ({}) lastResource={} lastModified={} lastCheck={} hitCount={}",
+								  _portalId,_pageId,_copy,
 								  _containsLastResourceContainerPageHtml,
 								  _lastModifiedTimeStamp,_lastCheckTimeStamp,_hitCount);
 	}
 	@Override
 	public CharSequence debugInfo() {
 		return Strings.customized("<html>\n" + 
-								  "{}" +				// pre-head
+								  "{}" +			// pre-head
 								  "<head>\n" +
 								  		"{}" +		// head
 								  "</head>\n" +

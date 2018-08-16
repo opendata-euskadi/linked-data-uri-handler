@@ -2,9 +2,11 @@ package r01hp.lod.urihandler.filter;
 
 import javax.servlet.http.HttpServletRequest;
 
+import r01f.patterns.Memoized;
 import r01f.types.url.Url;
 import r01f.types.url.UrlPath;
 import r01f.types.url.UrlQueryString;
+import r01hp.lod.config.R01HLODURIHandlerConfig;
 import r01hp.lod.urihandler.R01HLODRequestedURIData;
 import r01hp.lod.urihandler.R01HMIMEType;
 
@@ -30,6 +32,18 @@ extends R01HFakeMimeTypeRequestWrapper {
 			  mime);
 		_urlPath = urlPath;
 		_queryString = _sanitizeQueryString(qryString);
+	}
+	public R01HFakeMimeTypeAndUrlPathHttpServletRequestWrapper(final HttpServletRequest request,
+															   final UrlPath urlPath,final UrlQueryString qryString) {
+		super(request);
+		_urlPath = urlPath;
+		_queryString = _sanitizeQueryString(qryString);
+	}
+	public R01HFakeMimeTypeAndUrlPathHttpServletRequestWrapper(final HttpServletRequest request,
+															   final UrlPath urlPath) {
+		super(request);
+		_urlPath = urlPath;
+		_queryString = null;
 	}
 /////////////////////////////////////////////////////////////////////////////////////////
 //	OVERRIDE
@@ -59,29 +73,61 @@ extends R01HFakeMimeTypeRequestWrapper {
 //	getParameterNames()     yes     [p 2, p 1]
 //	getParameter("p 1")     yes     c d
 /////////////////////////////////////////////////////////////////////////////////////////
+	private Memoized<String> _queryStringMemo = new Memoized<String>() {
+														@Override
+														protected String supply() {
+															return _queryString != null ? _queryString.asStringEncodingParamValues()
+																						: "";
+														}
+												};
 	@Override
 	public String getQueryString() {
-		return _queryString != null ? _queryString.asStringEncodingParamValues()
-									: "";
+		return _queryStringMemo.get();
 	}
+	private Memoized<String> _servletPathMemo = new Memoized<String>() {
+														@Override
+														protected String supply() {
+															// remove the WAR context
+															String outPath =  UrlPath.from(_urlPath.getPathElementsAfter(UrlPath.from(R01HLODURIHandlerConfig.LOD_WAR_NAME)))
+																				 .asString();
+															return outPath;
+														}
+												};
+	@Override
+	public String getServletPath() {
+		return _servletPathMemo.get();
+	}
+	private Memoized<String> _requestURIMemo = new Memoized<String>() {
+														@Override
+														protected String supply() {
+//															String outURI =  Url.from(_urlPath,
+//																					  _queryString)
+//																	  			.asStringUrlEncodingQueryStringParamsValues();
+															String outURI =  Url.from(_urlPath)
+																				.asString();
+															return outURI;
+														}
+												};
 	@Override
 	public String getRequestURI() {
-//		String outURI =  Url.from(_urlPath,
-//								  _queryString)
-//				  			.asStringUrlEncodingQueryStringParamsValues();
-		String outURI =  Url.from(_urlPath)
-							.asString();
-		return outURI;
+		return _requestURIMemo.get();
 	}
+	private Memoized<StringBuffer> _requestURLMemo = new Memoized<StringBuffer>() {
+														@Override
+														protected StringBuffer supply() {
+//															Url outUrl = Url.from(super.getRequest().getRemoteHost(),super.getRequest().getRemotePort(),
+//																	  	    	  _urlPath,
+//																	  	    	  _queryString);
+															String outUrl =  Url.from(_urlPath)
+																				.asString();
+															return new StringBuffer(outUrl);
+														}
+												};
 	@Override
 	public StringBuffer getRequestURL() {
-//		Url outUrl = Url.from(super.getRequest().getRemoteHost(),super.getRequest().getRemotePort(),
-//				  	    	  _urlPath,
-//				  	    	  _queryString);
-		String outUrl =  Url.from(_urlPath)
-							.asString();
-		return new StringBuffer(outUrl);
-	}	
+		return _requestURLMemo.get();
+	}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 //	
 /////////////////////////////////////////////////////////////////////////////////////////

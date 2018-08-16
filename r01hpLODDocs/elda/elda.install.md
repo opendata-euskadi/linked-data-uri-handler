@@ -48,6 +48,8 @@ If git client is available:
 otherwise use [eclipse] to import a GIT remote project
 (the git repository can be cloned although no eclipse project can be imported)
 
+another option is to use [github desktop] to clone the remote repo
+
 ## [2] - MAVEN BUILD
 
 **BEWARE!! JDK**
@@ -71,12 +73,23 @@ If any TEST fails, try:
 (see http://maven.apache.org/plugins-archives/maven-surefire-plugin-2.12.4/examples/skipping-test.html)
 
 All the dependencies should be downloaded to `/{dev_home}/eclipse/maven_libs`  
-... the generated WAR for elda-common should be at: `    /{dev_home}/projects_lod/git\elda\elda\elda-common\target`  
-... and the generated WAR for elda-assets should be at: `/{dev_home}/projects_lod/git\elda\elda\elda-assets\target`
+... the generated WAR for elda-common should be at: `    /{dev_home}/projects_lod/git/elda/elda/elda-common/target`  
+... and the generated WAR for elda-assets should be at: `/{dev_home}/projects_lod/git/elda/elda/elda-assets/target`
+
+BEWARE!
+Sometimes when running an SPARQL query the following exception arises:
+
+	Problem running query for SparqlSource{http://xxx0/blazegraph/sparql; unauthenticated}: Problems with HTTP response (was it an HTTP server?)
+
+The reason is the jena-arq jar version (see /r01hpLODWar/WebContent/WEB-INF/lib/ 
+The version downloaded by maven is jena-arq-2.10.2; BUT this version fails... download manually jena-arq-2.11.2 version
+and replace the other version
+
+
 
 ## [3] - ECLIPSE PROJECT: r01hpLODWar
 
-a) Copy the content of `/{dev_home}/projects_lod\git\elda\elda\elda-common\target\elda-common` to `[r01hpLODWar]\WebContent` folder
+a) Copy the content of `/{dev_home}/projects_lod/git/elda/elda/elda-common/target/elda-common` to `[r01hpLODWar]\WebContent` folder
 
 b) Compare `[elda-common]` libraries at `WebContent\WEB-INF\lib` with the project ones (resolved by ivy) and try to delete all the duplicate libraries from `WebContent\WEB-INF\lib`  
 (another alternative is to include all the [elda]-required libraries in the ivy.xml file and completely delete all `WebContent\WEB-INF\lib content)`

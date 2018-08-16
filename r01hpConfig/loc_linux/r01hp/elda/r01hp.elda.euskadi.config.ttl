@@ -19,41 +19,26 @@
 #
 
 @prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix spec:   <http://data.euskadi.localhost.eus:8081/api-config#> .
+@prefix spec:   <http://id.euskadi.eus/api-config#> .
 @prefix api:    <http://purl.org/linked-data/api/vocab#> .
 @prefix elda:   <http://www.epimorphics.com/vocabularies/lda#> .
 
-################################
-# BASE
-################################
-spec:describe-resource a api:API
-	; api:base "http://data.euskadi.localhost.eus:8081/doc/"
-	; rdfs:label "a minimal demonstration API"
-	; api:sparqlEndpoint <http://localhost:9999/blazegraph/namespace/euskadi_db/sparql>
-	; api:defaultViewer api:labelledDescribeViewer
-	; api:defaultFormatter spec:HtmlFormatter 
-	; api:viewer api:describeViewer, api:labelledDescribeViewer, api:basicViewer
-	; api:endpoint 
-		spec:describe,
-		spec:property,
-		spec:properties
-	; api:variable [api:name "_exceptionIfEmpty"; api:value "no"]
-	; api:variable [api:name "_resourceRoot"; api:value "http://data.euskadi.localhost.eus:8081/elda-assets/"]
-	.
-################################
-# FORMATTERS 
-################################	
+
+# ======================================================================================================================================================================
+# FORMATTERS
+# ======================================================================================================================================================================
 spec:HtmlFormatter a api:XsltFormatter 
 	; api:name "html" 
 	; api:mimeType "text/html; charset=utf-8" 
-	; api:stylesheet "http://data.euskadi.localhost.eus:8081/elda-assets/xslt/result.xsl"
+	; api:stylesheet "http://localhost:8080/r01hpLODWar/elda-assets/xslt/result.xsl"
 	.
-	
+
 # ======================================================================================================================================================================
-# ======================================================================================================================================================================
-# ******************************
 # SELECTORS
-# ******************************
+# ======================================================================================================================================================================
+################################
+# DESCRIBE SELECTOR
+################################
 spec:describe-selector a api:Selector 
 	;api:select """
 			select distinct ?item where{
@@ -62,50 +47,81 @@ spec:describe-selector a api:Selector
 			}
 			""" ;
 	.
+################################
+# LIST CLASSES SELECTOR
+################################
+spec:list-properties-selector a api:Selector 
+	;api:where "{ select ?thing where { ?thing a ?class } limit 1000} ?thing ?item []."; 
+	;api:orderBy "STR(?item)";
+	.
+
+
+# ======================================================================================================================================================================
+# DESCRIBE
+# ======================================================================================================================================================================
+################################
+# BASE
+################################
+spec:describe-resource a api:API
+	; api:base "http://id.euskadi.eus/"
+	; rdfs:label "a minimal demonstration API"
+	; api:sparqlEndpoint <http://localhost:8080/r01hpLODWar/read/blazegraph/namespace/euskadi_db/sparql>
+	; api:defaultViewer api:labelledDescribeViewer
+	; api:defaultFormatter spec:HtmlFormatter 
+	; api:viewer api:describeViewer, api:labelledDescribeViewer, api:basicViewer
+	; api:endpoint 
+		spec:list-properties,
+		spec:describe-property,
+		spec:describe-nti,
+		spec:describe-dataset,
+		spec:describe-dataset-distro,
+		spec:describe-dataset-format,
+		spec:describe-LegalResource,
+		spec:describe-LegalExpression,
+		spec:describe-Format,
+		spec:describe-LegalResource-Corrigendum,
+		spec:describe-LegalExpression-Corrigendum,
+		spec:describe-Format-Corrigendum
+	; api:variable [api:name "_exceptionIfEmpty"; api:value "no"]
+	; api:variable [api:name "_resourceRoot"; api:value "http://localhost/elda-assets/"]
+	.
+
 
 ################################
 # NTI ITEM ENDPOINTS
 ################################
-spec:describe a api:ItemEndpoint
+spec:describe-nti a api:ItemEndpoint
 	; rdfs:label			"GET Resource"
 	; rdfs:comment			"Endpoint API for asking about euskadi NTI-like uri in elda."@en
-	; api:uriTemplate		"/id/{sector}/{domain}/{class}/{identifier}"
-	; api:variable			[api:name "uriITEM"; api:value "http://data.euskadi.ejiedes.eus/id/{sector}/{domain}/{class}/{identifier}"]
+	; api:uriTemplate		"/{sector}/{domain}/{class}/{identifier}"
+	; api:variable			[api:name "uriITEM"; api:value "http://id.euskadi.eus/{sector}/{domain}/{class}/{identifier}"]
 	; api:selector spec:describe-selector
 	.
-
-spec:property a api:ItemEndpoint
-	; rdfs:label			"GET Resource"
-	; rdfs:comment			"Endpoint API for asking about euskadi NTI-like uri in elda."@en
-	; api:uriTemplate		"/id/{property}/{resource}/{identifier}"
-	; api:variable			[api:name "uriITEM"; api:value "http://data.euskadi.ejiedes.eus/id/{property}/{resource}/{identifier}"]
-	; api:selector spec:describe-selector
-	. 
 
 ################################
 # DATASET ITEM ENDPOINTS
 ################################
-spec:describe a api:ItemEndpoint
+spec:describe-dataset a api:ItemEndpoint
 	; rdfs:label			"GET Resource"
 	; rdfs:comment			"Endpoint API for asking about euskadi dataset."@en
 	; api:uriTemplate		"/dataset/{namedgraph}"
-	; api:variable			[api:name "uriITEM"; api:value "http://data.euskadi.ejiedes.eus/dataset/{namedgraph}"]
+	; api:variable			[api:name "uriITEM"; api:value "http://id.euskadi.eus/dataset/{namedgraph}"]
 	; api:selector spec:describe-selector
 	.
 	
-spec:describe a api:ItemEndpoint
+spec:describe-dataset-distro a api:ItemEndpoint
 	; rdfs:label			"GET Resource"
 	; rdfs:comment			"Endpoint API for asking about euskadi dataset distribution (language dependent)."@en
 	; api:uriTemplate		"/distribution/{namedgraph}/{lang}/{format}"
-	; api:variable			[api:name "uriITEM"; api:value "http://data.euskadi.ejiedes.eus/distribution/{namedgraph}/{lang}/{format}"]
+	; api:variable			[api:name "uriITEM"; api:value "http://id.euskadi.eus/distribution/{namedgraph}/{lang}/{format}"]
 	; api:selector spec:describe-selector
 	.
 	
-spec:describe a api:ItemEndpoint
+spec:describe-dataset-format a api:ItemEndpoint
 	; rdfs:label			"GET Resource"
 	; rdfs:comment			"Endpoint API for asking about euskadi dataset distribution (language independent)."@en
 	; api:uriTemplate		"/distribution/{namedgraph}/{format}"
-	; api:variable			[api:name "uriITEM"; api:value "http://data.euskadi.ejiedes.eus/distribution/{namedgraph}/{format}"]
+	; api:variable			[api:name "uriITEM"; api:value "http://id.euskadi.eus/distribution/{namedgraph}/{format}"]
 	; api:selector spec:describe-selector
 	.
 	
@@ -114,70 +130,67 @@ spec:describe a api:ItemEndpoint
 ################################
 spec:describe-LegalResource  a api:ItemEndpoint
 	; rdfs:label			"GET Resource"
-	; rdfs:comment			"Endpoint API for asking about ELDA uri."@en
+	; rdfs:comment			"Endpoint API for asking about ELI uri."@en
 	; api:uriTemplate		"/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/dof"
-	; api:variable			[api:name "uriITEM"; api:value "http://data.euskadi.ejiedes.eus/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/dof"]
+	; api:variable			[api:name "uriITEM"; api:value "http://id.euskadi.eus/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/dof"]
 	; api:selector spec:describe-selector
 	.
 	
 spec:describe-LegalExpression  a api:ItemEndpoint
 	; rdfs:label			"GET Resource"
-	; rdfs:comment			"Endpoint API for asking about ELDA uri."@en
+	; rdfs:comment			"Endpoint API for asking about ELI uri."@en
 	; api:uriTemplate		"/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/dof/{language}"
-	; api:variable			[api:name "uriITEM"; api:value "http://data.euskadi.ejiedes.eus/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/dof/{language}"]
+	; api:variable			[api:name "uriITEM"; api:value "http://id.euskadi.eus/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/dof/{language}"]
 	; api:selector spec:describe-selector
 	.
 
 spec:describe-Format  a api:ItemEndpoint
 	; rdfs:label			"GET Resource"
-	; rdfs:comment			"Endpoint API for asking about ELDA uri."@en
+	; rdfs:comment			"Endpoint API for asking about ELI uri."@en
 	; api:uriTemplate		"/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/dof/{language}/{format}"
-	; api:variable			[api:name "uriITEM"; api:value "http://data.euskadi.ejiedes.eus/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/dof/{language}/{format}"]
+	; api:variable			[api:name "uriITEM"; api:value "http://id.euskadi.eus/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/dof/{language}/{format}"]
 	; api:selector spec:describe-selector
 	.
 	
 spec:describe-LegalResource-Corrigendum  a api:ItemEndpoint
 	; rdfs:label			"GET Resource"
-	; rdfs:comment			"Endpoint API for asking about ELDA uri."@en
+	; rdfs:comment			"Endpoint API for asking about ELI uri."@en
 	; api:uriTemplate		"/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/corrigendum/{publishedDate}/dof"
-	; api:variable			[api:name "uriITEM"; api:value "http://data.euskadi.ejiedes.eus/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/corrigendum/{publishedDate}/dof"]
+	; api:variable			[api:name "uriITEM"; api:value "http://id.euskadi.eus/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/corrigendum/{publishedDate}/dof"]
 	; api:selector spec:describe-selector
 	.
 
 spec:describe-LegalExpression-Corrigendum  a api:ItemEndpoint
 	; rdfs:label			"GET Resource"
-	; rdfs:comment			"Endpoint API for asking about ELDA uri."@en
+	; rdfs:comment			"Endpoint API for asking about ELI uri."@en
 	; api:uriTemplate		"/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/corrigendum/{publishedDate}/dof/{language}"
-	; api:variable			[api:name "uriITEM"; api:value "http://data.euskadi.ejiedes.eus/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/corrigendum/{publishedDate}/dof/{language}"]
+	; api:variable			[api:name "uriITEM"; api:value "http://id.euskadi.eus/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/corrigendum/{publishedDate}/dof/{language}"]
 	; api:selector spec:describe-selector
 	.
 	
 spec:describe-Format-Corrigendum  a api:ItemEndpoint
 	; rdfs:label			"GET Resource"
-	; rdfs:comment			"Endpoint API for asking about ELDA uri."@en
+	; rdfs:comment			"Endpoint API for asking about ELI uri."@en
 	; api:uriTemplate		"/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/corrigendum/{publishedDate}/dof/{language}/{format}"
-	; api:variable			[api:name "uriITEM"; api:value "http://data.euskadi.ejiedes.eus/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/corrigendum/{publishedDate}/dof/{language}/{format}"]
+	; api:variable			[api:name "uriITEM"; api:value "http://id.euskadi.eus/eli/es-pv/{type}/{year}/{month}/{day}/{naturalidentifier}/corrigendum/{publishedDate}/dof/{language}/{format}"]
 	; api:selector spec:describe-selector
 	.		
 		
 
-# ======================================================================================================================================================================
-# ======================================================================================================================================================================
-
-# ******************************
-# LIST CLASSES SELECTOR
-# ******************************
-spec:properties-selector a api:Selector 
-	;api:where "{ select ?thing where { ?thing a ?class } limit 1000} ?thing ?item []."; 
-	;api:orderBy "STR(?item)";
-	.
-
 ################################
-# LIST CLASSES
+# PROPERTIES
 ################################
-spec:properties  a api:ListEndpoint 
+spec:list-properties  a api:ListEndpoint 
 	; rdfs:label			"GET Resource" 
+	; rdfs:comment			"Endpoint API for asking about an object's properties."@en
 	; api:uriTemplate		"/{property}/{resource}/{identifier}" 
-	; api:selector spec:properties-selector
+	; api:selector spec:list-properties-selector
 	.
-
+	
+spec:describe-property a api:ItemEndpoint
+	; rdfs:label			"GET Resource"
+	; rdfs:comment			"Endpoint API for asking about a property."@en
+	; api:uriTemplate		"/{property}/{resource}/{identifier}"
+	; api:variable			[api:name "uriITEM"; api:value "http://id.euskadi.eus/{property}/{resource}/{identifier}"]
+	; api:selector spec:describe-selector
+	. 

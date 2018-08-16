@@ -25,7 +25,7 @@
 			
     <info organisation="com.ejie.r01.r01hp"
           module="r01hpLODTest"
-          revision="1.1.0"
+          revision="1.4"
           status="integration">
 	</info>
 	
@@ -42,6 +42,7 @@
 		<artifact name="r01hpLODTest" type="jar" ext="jar" />
 		<artifact name="r01hpLODTest" type="pom" ext="pom" />
 	</publications>
+	
 	<dependencies defaultconf="default->default">
 	
 		<!-- ============================================================================================================================== -->

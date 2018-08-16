@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import r01f.debug.Debuggable;
 import r01f.guids.CommonOIDs.Role;
 import r01f.types.url.Host;
+import r01f.types.url.UrlPath;
 import r01f.util.types.Strings;
 
 @Accessors(prefix="_")
@@ -49,7 +50,7 @@ public class R01HLODTripleStoreHostWithRole
 	@Override
 	public CharSequence debugInfo() {
 		return Strings.customized("{} ({})",
-								  _host,_role);
+								  _host.asUrl(),_role);
 	}
 /////////////////////////////////////////////////////////////////////////////////////////
 //	CONSTANTS
@@ -68,7 +69,17 @@ public class R01HLODTripleStoreHostWithRole
 			&& role.isContainedIn(WRITE_ROLE,
 								  READ_WRITE_ROLE);
 	}
-	
+	public static Role roleFrom(final UrlPath urlPath) {
+		if (urlPath == null) {
+			return null;
+		} else if (urlPath.containsPathElement("read")) {
+			return READ_ROLE;
+		} else if (urlPath.containsPathElement("write")) {
+			return WRITE_ROLE;
+		} else {
+			return null;
+		}
+	}
 	public static Predicate<R01HLODTripleStoreHostWithRole> matcherFor(final Role role) {
 		return new Predicate<R01HLODTripleStoreHostWithRole>() {
 						@Override

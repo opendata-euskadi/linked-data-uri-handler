@@ -11,8 +11,8 @@
     xmlns:schema="http://schema.org/"
     xmlns:sd="http://www.w3.org/ns/sparql-service-description#"
     xmlns:void="http://rdfs.org/ns/void#">
-  <dcat:Dataset rdf:about="http://data.euskadi.eus/dataset/bopv-european-legislation-identifier-eli">
-    <dct:identifier>http://data.euskadi.eus/dataset/bopv-european-legislation-identifier-eli</dct:identifier>
+  <dcat:Dataset rdf:about="http://id.euskadi.eus/dataset/bopv-european-legislation-identifier-eli">
+    <dct:identifier>http://id.euskadi.eus/dataset/bopv-european-legislation-identifier-eli</dct:identifier>
     <dc:language>es</dc:language>
     <dct:title xml:lang="es">Legislación de la Comunidad Autónoma de Euskadi (BOPV) - European Legislation Identifier (ELI)</dct:title>
     <dct:description xml:lang="es">Este conjunto de datos contiene la legislación de la Comunidad Autónoma de Euskadi.</dct:description>
@@ -20,7 +20,7 @@
     <dct:title xml:lang="eu">Euskal Autonomia Erkidegoan Legedia (EHAA) - European Legislation Identifier (ELI)</dct:title>
     <dct:description xml:lang="eu">Datu-sorta honek Euskal Autonomia Erkidegoan legedia du.</dct:description>
     <dcat:distribution>
-      <dcat:Distribution rdf:about="http://data.euskadi.eus/distribution/eli-1936-1999/ttl">
+      <dcat:Distribution rdf:about="http://id.euskadi.eus/distribution/eli-1936-1999/ttl">
         <dct:format>
           <dct:IMT>
             <rdfs:label>RDF-Turtle</rdfs:label>
@@ -34,7 +34,7 @@
       </dcat:Distribution>
     </dcat:distribution>
     <dcat:distribution>
-      <dcat:Distribution rdf:about="http://data.euskadi.eus/distribution/eli-2000-2015/ttl">
+      <dcat:Distribution rdf:about="http://id.euskadi.eus/distribution/eli-2000-2015/ttl">
         <dct:format>
           <dct:IMT>
             <rdfs:label>RDF-Turtle</rdfs:label>
@@ -48,7 +48,7 @@
       </dcat:Distribution>
     </dcat:distribution>
     <dcat:distribution>
-      <dcat:Distribution rdf:about="http://data.euskadi.eus/distribution/eli-2016-2018/ttl">
+      <dcat:Distribution rdf:about="http://id.euskadi.eus/distribution/eli-2016-2018/ttl">
         <dct:format>
           <dct:IMT>
             <rdfs:label>RDF-Turtle</rdfs:label>
@@ -62,11 +62,11 @@
       </dcat:Distribution>
     </dcat:distribution>
     <dcat:distribution>
-      <dcat:Distribution rdf:about="http://data.euskadi.eus/distribution/bopv-european-legislation-identifier-eli/lod">
+      <dcat:Distribution rdf:about="http://id.euskadi.eus/distribution/bopv-european-legislation-identifier-eli/lod">
         <rdf:type rdf:resource="http://rdfs.org/ns/void#Dataset"/>
         <rdf:type rdf:resource="http://schema.org/Distribution"/>
-        <sd:namedGraph rdf:resource="http://data.euskadi.eus/graph/bopv-european-legislation-identifier-eli"/>
-        <void:sparqlEndpoint rdf:resource="http://data.euskadi.eus/sparql/"/>
+        <sd:namedGraph rdf:resource="http://id.euskadi.eus/graph/bopv-european-legislation-identifier-eli"/>
+        <void:sparqlEndpoint rdf:resource="http://id.euskadi.eus/sparql/"/>
         <dct:title xml:lang="es">Legislación BOPV - ELI (Linked Data)</dct:title>
         <dct:title xml:lang="eu">EHAA Legedia - ELI (Linked Data)</dct:title>
       </dcat:Distribution>
